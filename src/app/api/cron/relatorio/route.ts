@@ -10,6 +10,7 @@ import { render } from "@react-email/render";
 
 // Vercel Cron Endpoint: Envio dos Relatórios Semanais SEO das PMEs
 // O vercel chamará ela via cron configurada no vercel.json
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
