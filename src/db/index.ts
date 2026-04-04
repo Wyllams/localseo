@@ -6,13 +6,16 @@ import * as esquema from "./schema";
  * Conexão com o banco PostgreSQL via Supabase.
  * Usa Transaction Pooler (prepare: false) para compatibilidade serverless.
  */
-const stringConexao = process.env.DATABASE_URL;
+const stringConexaoRaw = process.env.DATABASE_URL;
 
-if (!stringConexao) {
+if (!stringConexaoRaw) {
   throw new Error(
     "❌ DATABASE_URL não configurada. Verifique o arquivo .env.local"
   );
 }
+
+// Remove aspas simples ou duplas caso o usuário tenha copiado errado para o painel do Vercel
+const stringConexao = stringConexaoRaw.replace(/^["']|["']$/g, "");
 
 const cliente = postgres(stringConexao, {
   prepare: false, // Necessário para Supabase Transaction Pooler
