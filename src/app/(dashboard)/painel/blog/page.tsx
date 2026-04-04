@@ -4,8 +4,10 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { bd } from "@/db";
 import { negocios, artigos } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { formatarData, tempoRelativo } from "@/lib/utils";
+import { revalidatePath } from "next/cache";
+import { Trash2 } from "lucide-react";
 import { CriadorBlog } from "./criador-blog";
 import Link from "next/link";
 import { Star } from "lucide-react";
@@ -47,6 +49,22 @@ export default async function PaginaBlog() {
     where: eq(artigos.negocioId, negocioUser.id),
     orderBy: [desc(artigos.criadoEm)],
   });
+
+  async function excluirArtigo(formDados: FormData) {
+    "use server";
+    const id = formDados.get("id") as string;
+    if (!id) return;
+    
+    // Segurança: Garantir que o artigo pertence ao negócio do usuário atual
+    await bd.delete(artigos).where(
+      and(
+        eq(artigos.id, id),
+        eq(artigos.negocioId, negocioUser.id)
+      )
+    );
+    
+    revalidatePath("/painel/blog");
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -159,6 +177,17 @@ export default async function PaginaBlog() {
                   >
                     Ler Artigo <Globe className="w-4 h-4" />
                   </Link>
+
+                  <form action={excluirArtigo} className="mt-2 sm:mt-0">
+                    <input type="hidden" name="id" value={artigo.id} />
+                    <button 
+                      type="submit" 
+                      className="flex items-center gap-1.5 text-xs font-medium text-destructive/70 hover:text-destructive hover:bg-destructive/10 px-2 py-1.5 rounded-md transition-colors"
+                      title="Excluir Artigo"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Excluir
+                    </button>
+                  </form>
                 </div>
               </div>
             ))}

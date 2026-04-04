@@ -4,8 +4,10 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { bd } from "@/db";
 import { negocios, postagens } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { formatarData, tempoRelativo } from "@/lib/utils";
+import { revalidatePath } from "next/cache";
+import { Trash2 } from "lucide-react";
 import { CriadorPostagem } from "./criador-postagem";
 
 export default async function PaginaPostagens() {
@@ -33,6 +35,22 @@ export default async function PaginaPostagens() {
 
   const publicadas = listaPostagens.filter((p: any) => p.status === "PUBLICADO").length;
   const agendadas = listaPostagens.filter((p: any) => p.status === "AGENDADO").length;
+
+  async function excluirPostagem(formDados: FormData) {
+    "use server";
+    const id = formDados.get("id") as string;
+    if (!id) return;
+    
+    // Segurança: Garantir que a postagem pertence ao negócio do usuário atual
+    await bd.delete(postagens).where(
+      and(
+        eq(postagens.id, id),
+        eq(postagens.negocioId, negocioUser.id)
+      )
+    );
+    
+    revalidatePath("/painel/postagens");
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -124,9 +142,22 @@ export default async function PaginaPostagens() {
                     {post.conteudo.length > 200 ? post.conteudo.substring(0, 200) + "..." : post.conteudo}
                   </p>
                   
-                  <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{formatarData(post.criadoEm)}</span>
-                    <span>{tempoRelativo(post.criadoEm)}</span>
+                  <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground relative">
+                    <div className="flex gap-2">
+                      <span>{formatarData(post.criadoEm)}</span>
+                      <span>• {tempoRelativo(post.criadoEm)}</span>
+                    </div>
+
+                    <form action={excluirPostagem} className="absolute right-0 bottom-0">
+                      <input type="hidden" name="id" value={post.id} />
+                      <button 
+                        type="submit" 
+                        className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                        title="Excluir Postagem"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </form>
                   </div>
                 </div>
               </div>
