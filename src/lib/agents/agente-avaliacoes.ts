@@ -1,10 +1,7 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 import { z } from "zod";
 
-// Inicializa o SDK caso haja a chave (pode ser mockado na Fase 0/1)
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || "dummy",
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "dummy");
 
 /**
  * Interface estrita de saída da IA.
@@ -26,12 +23,12 @@ interface ParamsAgente {
 }
 
 /**
- * Agente de Avaliações (Claude 3.5 Sonnet)
+ * Agente de Avaliações (Gemini)
  * Lê os dados da avaliação e elabora uma resposta cordial e com palavras-chave de SEO Local.
  */
 export async function analisarEResponderAvaliacao(params: ParamsAgente): Promise<ResultadoAvaliacao> {
   // Se não tem chave de API configurada, retorna um Mock estático para testar a UI
-  if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY === "dummy") {
+  if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "dummy") {
     // delay falso
     await new Promise((res) => setTimeout(res, 1500));
     
@@ -44,61 +41,50 @@ export async function analisarEResponderAvaliacao(params: ParamsAgente): Promise
     };
   }
 
-  // Integração Real utilizando Tool calls / Structured outputs
   const systemPrompt = `Você é um robô assistente especializado em SEO Local e Relações Públicas.
 Seu objetivo é analisar uma avaliação que um cliente deixou no Google Meu Negócio e gerar uma resposta perfeita.
 Regras da resposta:
 - Tom profissional, cortês e acolhedor.
 - Se for crítica (nota baixa), seja compreensivo e ofereça resolução. Não brigue com o cliente.
 - Se for positivo, agradeça e convide a voltar.
-- INCLUA o nome do negócio e a categoria de forma sutil na resposta para ajudar no SEO (ex: "Aqui na [Barbearia X] ficamos felizes...").
-- Retorne EXATAMENTE o JSON com sentimento e a resposta.`;
+- INCLUA o nome do negócio e a categoria de forma sutil na resposta para ajudar no SEO (ex: "Aqui na [Barbearia X] ficamos felizes...").`;
 
   try {
-    const resposta = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 500,
-      system: systemPrompt,
-      messages: [
-        {
-          role: "user",
-          content: `Negócio: ${params.nomeNegocio}\nCategoria: ${params.categoriaNegocio}\nCliente: ${params.nomeCliente}\nNota: ${params.nota}/5\nComentário: "${params.texto}"`,
-        }
-      ],
-      tools: [
-        {
-          name: "output_review_response",
-          description: "Gera a resposta estruturada para salvar no banco de dados.",
-          input_schema: {
-            type: "object",
-            properties: {
-              sentimento: {
-                type: "string",
-                enum: ["POSITIVO", "NEGATIVO", "NEUTRO"],
-                description: "O sentimento da avaliação do cliente"
-              },
-              resposta_sugerida: {
-                type: "string",
-                description: "A resposta elaborada que será postada publicamente"
-              }
+    const model = genAI.getGenerativeModel({
+      model: "gemini-3.1-pro",
+      systemInstruction: systemPrompt,
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: SchemaType.OBJECT,
+          properties: {
+            sentimento: {
+              type: SchemaType.STRING,
+              description: "O sentimento da avaliação do cliente (DEVE SER EXATAMENTE UM DE: POSITIVO, NEGATIVO, NEUTRO)",
             },
-            required: ["sentimento", "resposta_sugerida"]
-          }
+            resposta_sugerida: {
+              type: SchemaType.STRING,
+              description: "A resposta elaborada que será postada publicamente"
+            }
+          },
+          required: ["sentimento", "resposta_sugerida"]
         }
-      ],
-      tool_choice: { type: "tool", name: "output_review_response" }
+      }
     });
 
-    const conteudoTool = resposta.content.find(block => block.type === "tool_use");
-    if (conteudoTool && 'input' in conteudoTool) {
-      const parsed = schemaRespostaAvaliacao.parse(conteudoTool.input);
-      return parsed;
-    }
+    const promptUser = `Negócio: ${params.nomeNegocio}\nCategoria: ${params.categoriaNegocio}\nCliente: ${params.nomeCliente}\nNota: ${params.nota}/5\nComentário: "${params.texto}"`;
+
+    const result = await model.generateContent(promptUser);
+    const textoJson = result.response.text();
     
-    throw new Error("A IA não retornou o esquema esperado.");
+    // Parseia o retorno 
+    const dataOutput = JSON.parse(textoJson);
+    
+    // Garante tipagem com zod
+    return schemaRespostaAvaliacao.parse(dataOutput);
 
   } catch (erro) {
-    console.error("[Agente Avaliacoes] Erro Claude:", erro);
+    console.error("[Agente Avaliacoes] Erro Gemini:", erro);
     throw erro;
   }
 }
