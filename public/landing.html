@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalSEO — IA que Cuida do seu Google Meu Negócio no Automático</title>
+  <meta name="description" content="Automatize posts, responda avaliações com IA e domine as buscas locais. A plataforma que cuida do seu Google Meu Negócio 24h por dia.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a1a;
+      --bg-card: rgba(255,255,255,0.04);
+      --bg-card-hover: rgba(255,255,255,0.08);
+      --text: #f0f0f5;
+      --text-muted: #8888aa;
+      --primary: #7c3aed;
+      --primary-light: #a78bfa;
+      --accent: #06d6a0;
+      --gradient: linear-gradient(135deg, #7c3aed, #3b82f6, #06d6a0);
+      --gradient-primary: linear-gradient(135deg, #7c3aed, #6d28d9);
+      --shadow-glow: 0 0 80px rgba(124,58,237,0.15);
+      --radius: 16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* === Utility === */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .text-gradient {
+      background: var(--gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .text-muted { color: var(--text-muted); }
+    .text-accent { color: var(--accent); }
+
+    /* === Navigation === */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 16px 0;
+      transition: all 0.3s ease;
+      background: transparent;
+    }
+    nav.scrolled {
+      background: rgba(10,10,26,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      text-decoration: none;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--primary-light); }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* === Buttons === */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: white;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(124,58,237,0.4);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .btn-outline:hover {
+      border-color: var(--primary-light);
+      background: rgba(124,58,237,0.1);
+    }
+    .btn-accent {
+      background: var(--accent);
+      color: #0a0a1a;
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(6,214,160,0.3);
+    }
+    .btn-accent:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(6,214,160,0.4);
+    }
+
+    /* === Hero === */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding-top: 100px;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse at 30% 50%, rgba(124,58,237,0.12) 0%, transparent 50%),
+                  radial-gradient(ellipse at 70% 20%, rgba(59,130,246,0.08) 0%, transparent 50%);
+      animation: float 20s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(-30px, 20px); }
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    .hero-text h1 {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 24px;
+    }
+    .hero-text p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+      max-width: 520px;
+    }
+    .hero-buttons { display: flex; gap: 16px; flex-wrap: wrap; }
+    .hero-image {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-glow);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .hero-image img {
+      width: 100%;
+      display: block;
+      border-radius: 20px;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(6,214,160,0.1);
+      border: 1px solid rgba(6,214,160,0.2);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    /* === Stats Bar === */
+    .stats-bar {
+      padding: 64px 0;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2.5rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* === Problem Section === */
+    .section { padding: 120px 0; }
+    .section-header {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 64px;
+    }
+    .section-header h2 {
+      font-size: clamp(2rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    .section-header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+    .section-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--primary-light);
+      margin-bottom: 12px;
+    }
+
+    /* === Problem Cards === */
+    .problems-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .problem-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      padding: 32px;
+      transition: all 0.3s ease;
+    }
+    .problem-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(255,255,255,0.1);
+      transform: translateY(-4px);
+    }
+    .problem-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    .problem-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .problem-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* === Features === */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      padding: 40px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-card:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+    }
+    .feature-number {
+      font-size: 3rem;
+      font-weight: 900;
+      opacity: 0.08;
+      position: absolute;
+      top: 16px;
+      right: 24px;
+    }
+    .feature-card h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    .feature-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(124,58,237,0.1);
+      border: 1px solid rgba(124,58,237,0.2);
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--primary-light);
+      margin-top: 16px;
+    }
+
+    /* === How It Works === */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+      position: relative;
+    }
+    .step-card { text-align: center; position: relative; }
+    .step-number {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--gradient-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin: 0 auto 24px;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+    }
+    .step-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .step-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* === Pricing === */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    .price-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .price-card.featured {
+      border-color: var(--primary);
+      background: rgba(124,58,237,0.05);
+      transform: scale(1.05);
+    }
+    .price-card.featured .price-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gradient-primary);
+      padding: 6px 20px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .price-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .price-card .price {
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin: 16px 0;
+      letter-spacing: -1px;
+    }
+    .price-card .price span { font-size: 1rem; font-weight: 400; color: var(--text-muted); }
+    .price-features {
+      list-style: none;
+      text-align: left;
+      margin: 24px 0;
+    }
+    .price-features li {
+      padding: 8px 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .price-features li::before {
+      content: '✓';
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* === Testimonials === */
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .testimonial-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      padding: 32px;
+    }
+    .testimonial-stars { color: #fbbf24; font-size: 1.2rem; margin-bottom: 16px; }
+    .testimonial-text {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .testimonial-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .testimonial-name { font-weight: 600; font-size: 0.9rem; }
+    .testimonial-role { color: var(--text-muted); font-size: 0.8rem; }
+
+    /* === CTA Section === */
+    .cta-section {
+      padding: 120px 0;
+      text-align: center;
+      position: relative;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(124,58,237,0.15) 0%, transparent 70%);
+    }
+    .cta-content { position: relative; z-index: 2; }
+    .cta-content h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    .cta-content p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin-bottom: 40px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* === Footer === */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* === Responsive === */
+    @media (max-width: 768px) {
+      .hero-content { grid-template-columns: 1fr; text-align: center; }
+      .hero-text p { margin-left: auto; margin-right: auto; }
+      .hero-buttons { justify-content: center; }
+      .hero-image { order: -1; max-width: 90%; margin: 0 auto; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .problems-grid,
+      .features-grid,
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .price-card.featured { transform: none; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    /* === Animations === */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease-out;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav id="navbar">
+    <div class="container">
+      <a href="#" class="logo">Local<span>SEO</span></a>
+      <div class="nav-links">
+        <a href="#problemas">O Problema</a>
+        <a href="#solucao">Solução</a>
+        <a href="#como-funciona">Como Funciona</a>
+        <a href="#planos">Planos</a>
+        <a href="/login" class="btn btn-primary" style="padding:10px 24px; font-size:0.85rem;">Acessar Plataforma</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-text fade-up">
+          <div class="hero-badge">🤖 Inteligência Artificial Incluída</div>
+          <h1>
+            Seu Google Meu Negócio no <span class="text-gradient">Piloto Automático</span>
+          </h1>
+          <p>
+            A plataforma que cria posts, responde avaliações e gera artigos SEO
+            automaticamente. Enquanto você cuida do seu negócio, nós cuidamos da
+            sua presença digital no Google.
+          </p>
+          <div class="hero-buttons">
+            <a href="/login" class="btn btn-primary">Começar Agora — Grátis 7 dias</a>
+            <a href="#como-funciona" class="btn btn-outline">Como funciona →</a>
+          </div>
+        </div>
+        <div class="hero-image fade-up" style="transition-delay: 0.2s">
+          <img src="/hero-dashboard.png" alt="Dashboard LocalSEO mostrando análises do Google Meu Negócio">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <section class="stats-bar">
+    <div class="container">
+      <div class="stats-grid fade-up">
+        <div>
+          <div class="stat-number text-gradient">93%</div>
+          <div class="stat-label">das buscas locais começam no Google Maps</div>
+        </div>
+        <div>
+          <div class="stat-number text-gradient">76%</div>
+          <div class="stat-label">visitam o estabelecimento em 24h</div>
+        </div>
+        <div>
+          <div class="stat-number text-gradient">4.5x</div>
+          <div class="stat-label">mais visitas com perfil atualizado</div>
+        </div>
+        <div>
+          <div class="stat-number text-gradient">+300%</div>
+          <div class="stat-label">de ligações com posts frequentes</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem -->
+  <section class="section" id="problemas">
+    <div class="container">
+      <div class="section-header fade-up">
+        <div class="section-tag">O Problema</div>
+        <h2>Seu Perfil no Google está <span class="text-gradient">Abandonado?</span></h2>
+        <p>A maioria dos negócios locais perde clientes todos os dias porque não cuida do que mais importa: sua presença no Google.</p>
+      </div>
+
+      <div class="problems-grid">
+        <div class="problem-card fade-up">
+          <div class="problem-icon" style="background:rgba(239,68,68,0.1);">😰</div>
+          <h3>Avaliações sem resposta</h3>
+          <p>Cada avaliação ignorada é um cliente perdido. O Google penaliza perfis que não interagem com as reviews.</p>
+        </div>
+        <div class="problem-card fade-up" style="transition-delay:0.1s">
+          <div class="problem-icon" style="background:rgba(249,115,22,0.1);">📭</div>
+          <h3>Perfil parado no tempo</h3>
+          <p>Sem posts, sem fotos, sem atualizações. O algoritmo do Google prioriza quem está ativo — seu concorrente agradece.</p>
+        </div>
+        <div class="problem-card fade-up" style="transition-delay:0.2s">
+          <div class="problem-icon" style="background:rgba(234,179,8,0.1);">⏰</div>
+          <h3>Sem tempo para cuidar</h3>
+          <p>Você já tem 1000 coisas para fazer no dia. Postar e responder avaliações fica pra "depois" — todo dia.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solution / Features -->
+  <section class="section" id="solucao" style="background: rgba(124,58,237,0.02);">
+    <div class="container">
+      <div class="section-header fade-up">
+        <div class="section-tag">A Solução</div>
+        <h2>Tudo no <span class="text-gradient">Automático</span> com IA</h2>
+        <p>O LocalSEO cuida de toda a sua presença digital no Google usando Inteligência Artificial de última geração.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card fade-up">
+          <div class="feature-number">01</div>
+          <h3>🤖 Posts Automáticos no Google</h3>
+          <p>A IA cria posts profissionais sobre seu negócio e publica direto no seu perfil do Google — com fotos reais via Unsplash. Sem você mexer em nada.</p>
+          <div class="feature-tag">✨ IA Generativa</div>
+        </div>
+        <div class="feature-card fade-up" style="transition-delay:0.1s">
+          <div class="feature-number">02</div>
+          <h3>⭐ Respostas Inteligentes em Avaliações</h3>
+          <p>Recebeu uma avaliação? A IA analisa o sentimento e gera uma resposta profissional, empática e personalizada em segundos.</p>
+          <div class="feature-tag">✨ Sentimento por IA</div>
+        </div>
+        <div class="feature-card fade-up" style="transition-delay:0.2s">
+          <div class="feature-number">03</div>
+          <h3>📝 Blog SEO com Artigos Gigantes</h3>
+          <p>Gere artigos de 2000+ palavras, otimizados para EEAT e estruturados para o Google. Domine as buscas de cauda longa da sua região.</p>
+          <div class="feature-tag">✨ Conteúdo Profundo</div>
+        </div>
+        <div class="feature-card fade-up" style="transition-delay:0.3s">
+          <div class="feature-number">04</div>
+          <h3>📊 Score de Presença Local</h3>
+          <p>Acompanhe sua pontuação de presença digital em tempo real. Veja como está performando vs. seus concorrentes na mesma região.</p>
+          <div class="feature-tag">✨ Monitoramento</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section" id="como-funciona">
+    <div class="container">
+      <div class="section-header fade-up">
+        <div class="section-tag">Como Funciona</div>
+        <h2>Em <span class="text-gradient">3 minutos</span> sua IA está rodando</h2>
+        <p>Sem configurações complicadas. Conecte seu negócio e deixe a IA trabalhar.</p>
+      </div>
+
+      <div class="steps-grid fade-up">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Cadastre seu negócio</h3>
+          <p>Informe nome, categoria e cidade. É tudo que precisamos para começar.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Conecte o Google</h3>
+          <p>Com um clique, conecte seu perfil do Google Meu Negócio à plataforma.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>A IA assume tudo</h3>
+          <p>Posts, respostas, artigos e relatórios são gerados automaticamente. Só acompanhe.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section" style="background: rgba(124,58,237,0.02);">
+    <div class="container">
+      <div class="section-header fade-up">
+        <div class="section-tag">Depoimentos</div>
+        <h2>Quem usa, <span class="text-gradient">recomenda</span></h2>
+      </div>
+
+      <div class="testimonials-grid fade-up">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text">"Em 30 dias meu perfil saiu da 4ª posição para 1ª no Maps da minha região. As avaliações respondidas fizeram uma diferença absurda."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MR</div>
+            <div>
+              <div class="testimonial-name">Marcos Roberto</div>
+              <div class="testimonial-role">Restaurante Sabor & Arte — SP</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text">"Eu não tinha tempo de cuidar do Google. Agora a IA faz tudo. Recebi 3x mais ligações no primeiro mês. Vale cada centavo."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">AP</div>
+            <div>
+              <div class="testimonial-name">Ana Paula</div>
+              <div class="testimonial-role">Barbearia Premium — RJ</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text">"Os artigos SEO geraram tráfego orgânico que antes era impensável. Agora clientes me encontram por termos que eu nem imaginava."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">CL</div>
+            <div>
+              <div class="testimonial-name">Dr. Carlos Lima</div>
+              <div class="testimonial-role">Clínica Viva Bem — MG</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="section" id="planos">
+    <div class="container">
+      <div class="section-header fade-up">
+        <div class="section-tag">Planos</div>
+        <h2>Invista na sua <span class="text-gradient">visibilidade</span></h2>
+        <p>Escolha o plano que melhor encaixa no seu momento. Sem contratos, cancele quando quiser.</p>
+      </div>
+
+      <div class="pricing-grid fade-up">
+        <div class="price-card">
+          <h3>Inicial</h3>
+          <p class="text-muted" style="font-size:0.85rem;">Para começar a presença digital</p>
+          <div class="price">R$97<span>/mês</span></div>
+          <ul class="price-features">
+            <li>Resposta automática de avaliações</li>
+            <li>1 post semanal no Google</li>
+            <li>Score de presença local</li>
+            <li>Relatório semanal por email</li>
+          </ul>
+          <a href="/login" class="btn btn-outline" style="width:100%;justify-content:center;">Começar</a>
+        </div>
+
+        <div class="price-card featured">
+          <div class="price-badge">⭐ Mais Popular</div>
+          <h3>Pro</h3>
+          <p class="text-muted" style="font-size:0.85rem;">Para crescer rápido</p>
+          <div class="price text-gradient">R$197<span style="-webkit-text-fill-color:var(--text-muted);">/mês</span></div>
+          <ul class="price-features">
+            <li>Tudo do Inicial</li>
+            <li>2 posts semanais no Google</li>
+            <li>Blog com artigos SEO</li>
+            <li>Site com subdomínio</li>
+            <li>Monitor de concorrentes</li>
+          </ul>
+          <a href="/login" class="btn btn-primary" style="width:100%;justify-content:center;">Escolher Pro</a>
+        </div>
+
+        <div class="price-card">
+          <h3>Pro+</h3>
+          <p class="text-muted" style="font-size:0.85rem;">Máxima visibilidade</p>
+          <div class="price">R$297<span>/mês</span></div>
+          <ul class="price-features">
+            <li>Tudo do Pro</li>
+            <li>4 posts semanais</li>
+            <li>Artigos SEO ilimitados</li>
+            <li>Relatório via WhatsApp</li>
+            <li>Suporte prioritário</li>
+          </ul>
+          <a href="/login" class="btn btn-outline" style="width:100%;justify-content:center;">Escolher Pro+</a>
+        </div>
+
+        <div class="price-card">
+          <h3>Agência</h3>
+          <p class="text-muted" style="font-size:0.85rem;">Para múltiplos clientes</p>
+          <div class="price">R$697<span>/mês</span></div>
+          <ul class="price-features">
+            <li>Tudo do Pro+</li>
+            <li>Até 10 negócios</li>
+            <li>Painel centralizado</li>
+            <li>White-label</li>
+            <li>API de integração</li>
+            <li>Gerente dedicado</li>
+          </ul>
+          <a href="/login" class="btn btn-outline" style="width:100%;justify-content:center;">Falar com vendas</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content fade-up">
+        <h2>Não perca mais clientes <span class="text-gradient">por negligência digital</span></h2>
+        <p>Enquanto você lê isso, seu concorrente está sendo encontrado no Google. A IA do LocalSEO trabalha 24h por você.</p>
+        <a href="/login" class="btn btn-accent" style="font-size:1.1rem; padding:18px 40px;">
+          Comece seu teste grátis de 7 dias →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>© 2026 LocalSEO. Todos os direitos reservados. Feito com IA no 🇧🇷</p>
+    </div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Intersection Observer for fade-up animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
