@@ -42,6 +42,8 @@ export default async function PaginaPostagens() {
     if (!id) return;
     
     // Segurança: Garantir que a postagem pertence ao negócio do usuário atual
+    if (!negocioUser) return;
+    
     await bd.delete(postagens).where(
       and(
         eq(postagens.id, id),

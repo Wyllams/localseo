@@ -56,6 +56,8 @@ export default async function PaginaBlog() {
     if (!id) return;
     
     // Segurança: Garantir que o artigo pertence ao negócio do usuário atual
+    if (!negocioUser) return;
+
     await bd.delete(artigos).where(
       and(
         eq(artigos.id, id),
