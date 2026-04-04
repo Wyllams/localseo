@@ -1,14 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
 
-/**
- * Página de Login — LocalSEO
- * Design premium com login via Google OAuth.
- */
-export default function PaginaLogin() {
+// Componente interno que usa os hooks de navegação
+function LoginForm() {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const router = useRouter();
@@ -31,7 +28,7 @@ export default function PaginaLogin() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto animate-fade-in">
+    <>
       {/* Logo mobile */}
       <div className="lg:hidden mb-8 flex items-center gap-3">
         <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
@@ -195,6 +192,20 @@ export default function PaginaLogin() {
       <p className="mt-8 text-center text-xs text-muted-foreground leading-relaxed">
         Você pode usar senhas genéricas (ex: 12345678) apenas para pular o Setup local do Google OAuth.
       </p>
+    </>
+  );
+}
+
+/**
+ * Página de Login — LocalSEO
+ * Design premium com login via Google OAuth.
+ */
+export default function PaginaLogin() {
+  return (
+    <div className="w-full max-w-md mx-auto animate-fade-in">
+      <Suspense fallback={<div className="flex justify-center p-8"><div className="w-6 h-6 border-2 border-gray-300 border-t-primary rounded-full animate-spin" /></div>}>
+        <LoginForm />
+      </Suspense>
     </div>
   );
 }
