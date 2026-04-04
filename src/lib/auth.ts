@@ -14,8 +14,8 @@ export const auth = betterAuth({
   }),
 
   baseURL: process.env.BETTER_AUTH_URL || 
-           (process.env.NEXT_PUBLIC_APP_URL ? (process.env.NEXT_PUBLIC_APP_URL.startsWith("http") ? process.env.NEXT_PUBLIC_APP_URL : `https://${process.env.NEXT_PUBLIC_APP_URL}`) : undefined) || 
-           (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+           process.env.NEXT_PUBLIC_APP_URL || 
+           (process.env.NODE_ENV === "production" ? "https://localseo-omega.vercel.app" : "http://localhost:3000"),
 
   /* ===== Provedores Sociais ===== */
   socialProviders: {
@@ -43,9 +43,8 @@ export const auth = betterAuth({
 
   /* ===== URLs de Trust ===== */
   trustedOrigins: [
-    process.env.NEXT_PUBLIC_APP_URL ? (process.env.NEXT_PUBLIC_APP_URL.startsWith("http") ? process.env.NEXT_PUBLIC_APP_URL : `https://${process.env.NEXT_PUBLIC_APP_URL}`) : "http://localhost:3000",
-    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000",
-    "https://localseo-omega.vercel.app"
+    "http://localhost:3000",
+    "https://localseo-omega.vercel.app",
   ],
 });
 
