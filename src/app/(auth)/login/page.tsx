@@ -17,12 +17,19 @@ function LoginForm() {
       setCarregando(true);
       setErro(null);
 
-      await signIn.social({
+      const res = await signIn.social({
         provider: "google",
         callbackURL: redirecionarPara,
       });
-    } catch {
-      setErro("Não foi possível conectar com o Google. Tente novamente.");
+
+      // Em vez de throw, o Better-Auth retorna a prop "error" se falhar
+      if (res.error) {
+        throw new Error(res.error.message || "Erro desconhecido ao conectar com o Google");
+      }
+      
+      // Se não houver erro, a página será redirecionada pelo próprio Better-Auth
+    } catch (err: any) {
+      setErro(`Erro: ${err.message}`);
       setCarregando(false);
     }
   }
