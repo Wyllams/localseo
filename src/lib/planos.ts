@@ -18,6 +18,8 @@ export interface AcessoPlano {
   blogLiberado: boolean;
   /** Nº máximo de artigos por mês (Infinity = ilimitado) */
   artigosMaxMes: number;
+  /** Pode usar o construtor de site IA? */
+  siteLiberado: boolean;
   /** Pode ver monitor de concorrentes? */
   monitorConcorrentes: boolean;
   /** Pode ver relatório via WhatsApp? */
@@ -35,6 +37,7 @@ const ACESSO_POR_PLANO: Record<PlanoAssinatura, AcessoPlano> = {
     postsSemanais: 1,
     blogLiberado: false,
     artigosMaxMes: 0,
+    siteLiberado: false,
     monitorConcorrentes: false,
     relatorioWhatsApp: false,
     suportePrioritario: false,
@@ -45,6 +48,7 @@ const ACESSO_POR_PLANO: Record<PlanoAssinatura, AcessoPlano> = {
     postsSemanais: 2,
     blogLiberado: true,
     artigosMaxMes: 4,
+    siteLiberado: true,
     monitorConcorrentes: true,
     relatorioWhatsApp: false,
     suportePrioritario: false,
@@ -55,6 +59,7 @@ const ACESSO_POR_PLANO: Record<PlanoAssinatura, AcessoPlano> = {
     postsSemanais: 4,
     blogLiberado: true,
     artigosMaxMes: Infinity,
+    siteLiberado: true,
     monitorConcorrentes: true,
     relatorioWhatsApp: true,
     suportePrioritario: true,
@@ -65,6 +70,7 @@ const ACESSO_POR_PLANO: Record<PlanoAssinatura, AcessoPlano> = {
     postsSemanais: 4,
     blogLiberado: true,
     artigosMaxMes: Infinity,
+    siteLiberado: true,
     monitorConcorrentes: true,
     relatorioWhatsApp: true,
     suportePrioritario: true,

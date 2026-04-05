@@ -5,6 +5,8 @@ import {
   text,
   timestamp,
   pgEnum,
+  boolean,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -49,6 +51,15 @@ export const negocios = pgTable("negocios", {
   statusAssinatura: varchar("status_assinatura", { length: 50 }),
   logoUrl: varchar("logo_url", { length: 500 }),
   descricao: text("descricao"),
+  // === Configuração do Site IA ===
+  siteAtivo: boolean("site_ativo").notNull().default(false),
+  siteHeadline: varchar("site_headline", { length: 500 }),
+  siteSubtitulo: text("site_subtitulo"),
+  siteServicos: jsonb("site_servicos").$type<string[]>(),
+  siteDiferencial: text("site_diferencial"),
+  siteTomVoz: varchar("site_tom_voz", { length: 50 }),
+  siteWhatsapp: varchar("site_whatsapp", { length: 20 }),
+  siteCor: varchar("site_cor", { length: 7 }),
   criadoEm: timestamp("criado_em", { withTimezone: true, mode: "date" })
     .notNull()
     .defaultNow(),
