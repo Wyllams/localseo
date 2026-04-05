@@ -127,10 +127,10 @@ export default async function PaginaBlog() {
         ) : (
           <div className="flex flex-col gap-4 mt-4">
             {listaArtigos.map((artigo: any) => (
-              <div key={artigo.id} className="bg-card border border-border rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-6 items-start group">
+              <div key={artigo.id} className="bg-card border border-border rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-6 items-stretch group">
                 
                 {/* Imagem Thumbnail */}
-                <div className="w-full sm:w-48 h-32 bg-muted rounded-lg overflow-hidden shrink-0 relative flex items-center justify-center">
+                <div className="w-full sm:w-48 h-32 bg-muted rounded-lg overflow-hidden shrink-0 relative flex items-center justify-center self-start">
                   {artigo.imagemHero ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img 
@@ -172,7 +172,7 @@ export default async function PaginaBlog() {
                     <span>{tempoRelativo(artigo.criadoEm)}</span>
                   </div>
                   
-                  <div className="flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-4 mt-auto pt-4">
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-4 mt-auto pt-6 justify-end w-full sm:w-auto">
                     <Link 
                       href={`/blog/${artigo.slug}`} 
                       target="_blank"
