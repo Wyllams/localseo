@@ -86,29 +86,29 @@ export default async function PainelRelatorios() {
     dadosGrafico.push({ data: formatarData(new Date()), score: 0 });
   }
 
-  // Estatísticas simuladas de conversão GMB
+  // Estatísticas simuladas genéricas e aplicáveis a qualquer nicho
   const statsGmb = [
     { 
-      label: "Ligar Agora", 
-      valor: "148", 
+      label: "Visualizações do Perfil", 
+      valor: "1.248", 
       crescimento: "+32%", 
-      icone: Phone, 
+      icone: TrendingUp, 
       cor: "text-blue-400",
       bg: "bg-blue-400/10" 
     },
     { 
-      label: "Cliques no WhatsApp", 
-      valor: "89", 
+      label: "Acessos ao Site / LP", 
+      valor: "389", 
       crescimento: "+15%", 
-      icone: MessageCircle, 
+      icone: Activity, 
       cor: "text-emerald-400",
       bg: "bg-emerald-400/10" 
     },
     { 
-      label: "Solicitações de Rota", 
-      valor: "215", 
-      crescimento: "+8%", 
-      icone: Navigation, 
+      label: "Aparições em Buscas", 
+      valor: "2.515", 
+      crescimento: "+21%", 
+      icone: Map, 
       cor: "text-purple-400",
       bg: "bg-purple-400/10" 
     },
