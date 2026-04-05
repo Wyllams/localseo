@@ -148,7 +148,7 @@ export const PLANOS: InfoPlano[] = [
       "Resposta automática de avaliações",
       "1 post semanal no Google",
       "Score de presença local",
-      "Relatório semanal por email",
+      "Relatório quinzenal por email",
     ],
   },
   {
@@ -174,7 +174,7 @@ export const PLANOS: InfoPlano[] = [
       "Tudo do plano Pro",
       "4 posts semanais no Google",
       "Artigos SEO ilimitados",
-      "Relatório via WhatsApp",
+      "Relatório quinzenal via WhatsApp",
       "Suporte prioritário",
     ],
   },
