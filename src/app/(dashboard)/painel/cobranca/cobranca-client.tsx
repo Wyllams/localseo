@@ -42,7 +42,7 @@ export default function CobrancaClient({
       </div>
 
       {/* Grid de planos */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
         {PLANOS.map((plano) => (
           <div
             key={plano.id}
