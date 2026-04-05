@@ -144,17 +144,17 @@ export default async function PaginaPostagens() {
                     {post.conteudo.length > 200 ? post.conteudo.substring(0, 200) + "..." : post.conteudo}
                   </p>
                   
-                  <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground relative">
-                    <div className="flex gap-2">
+                  <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
                       <span>{formatarData(post.criadoEm)}</span>
                       <span>• {tempoRelativo(post.criadoEm)}</span>
                     </div>
 
-                    <form action={excluirPostagem} className="absolute right-0 bottom-0">
+                    <form action={excluirPostagem} className="flex">
                       <input type="hidden" name="id" value={post.id} />
                       <button 
                         type="submit" 
-                        className="p-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                        className="p-1.5 -mr-1.5 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors flex items-center justify-center"
                         title="Excluir Postagem"
                       >
                         <Trash2 className="w-4 h-4" />
