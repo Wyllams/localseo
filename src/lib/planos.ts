@@ -66,17 +66,6 @@ const ACESSO_POR_PLANO: Record<PlanoAssinatura, AcessoPlano> = {
     maxNegocios: 1,
     whiteLabel: false,
   },
-  AGENCIA: {
-    postsSemanais: 4,
-    blogLiberado: true,
-    artigosMaxMes: Infinity,
-    siteLiberado: true,
-    monitorConcorrentes: true,
-    relatorioWhatsApp: true,
-    suportePrioritario: true,
-    maxNegocios: 10,
-    whiteLabel: true,
-  },
 };
 
 /**

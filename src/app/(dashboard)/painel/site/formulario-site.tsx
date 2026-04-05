@@ -10,6 +10,7 @@ interface PropsFormulario {
   telefoneExistente?: string | null;
   // Valores default para edição
   nichoDefault?: string | null;
+  servicoFocoDefault?: string | null;
   servicosDefault?: string[] | null;
   diferencialDefault?: string | null;
   tomVozDefault?: string | null;
@@ -26,6 +27,7 @@ export function FormularioSite({
   categoria,
   telefoneExistente,
   nichoDefault,
+  servicoFocoDefault,
   servicosDefault,
   diferencialDefault,
   tomVozDefault,
@@ -71,7 +73,7 @@ export function FormularioSite({
       } else {
         setMensagem({
           tipo: "sucesso",
-          texto: "Site gerado com sucesso! Já está no ar.",
+          texto: "Landing Page gerada com sucesso! Já está no ar.",
         });
         setTimeout(() => {
           window.location.href = "/painel/site";
@@ -95,6 +97,24 @@ export function FormularioSite({
         />
       </div>
 
+  <div className="p-5 border border-primary/20 bg-primary/5 rounded-2xl">
+        <label className="block text-sm font-semibold text-foreground mb-1">
+          Qual o serviço principal desta Landing Page? <span className="text-red-500">*</span>
+        </label>
+        <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+          <strong>A IA fará a página totalmente focada nesse serviço.</strong> Ex: "Implante Dentário", "Corte Infantil". 
+          <br />Se for um nicho genérico como "Restaurante", basta escrever "Restaurante" ou "Italiano".
+        </p>
+        <input
+          type="text"
+          name="servicoFoco"
+          required
+          defaultValue={servicoFocoDefault || ""}
+          placeholder="Ex: Harmonização Facial"
+          className="w-full px-4 py-3 rounded-xl bg-background border border-primary/30 text-foreground text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary/50 outline-none transition-all shadow-sm"
+        />
+      </div>
+
       {/* Nicho */}
       <div>
         <label className="block text-sm font-semibold text-foreground mb-2">
@@ -109,10 +129,10 @@ export function FormularioSite({
         />
       </div>
 
-      {/* Serviços */}
+      {/* Serviços / Benefícios */}
       <div>
         <label className="block text-sm font-semibold text-foreground mb-2">
-          Seus Principais Serviços{" "}
+          Caracteristicas / Sub-serviços desta página{" "}
           <span className="text-muted-foreground font-normal">
             (até 6)
           </span>
@@ -249,7 +269,7 @@ export function FormularioSite({
         ) : (
           <>
             <Sparkles className="w-5 h-5" />
-            Gerar Site com IA
+            Gerar Landing Page com IA
           </>
         )}
       </button>

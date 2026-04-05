@@ -17,16 +17,16 @@ import Link from "next/link";
 import { formatarData } from "@/lib/utils";
 
 interface PageProps {
-  params: Promise<{ slugNegocio: string }>;
+  params: Promise<{ slugNegocio: string; lpSlug: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const { slugNegocio } = await params;
+  const { slugNegocio, lpSlug } = await params;
   const negocio = await bd.query.negocios.findFirst({
     where: eq(negocios.subdominio, slugNegocio),
     with: {
       landingPages: {
-        where: (lps, { and, eq }) => and(eq(lps.isPrincipal, true), eq(lps.ativo, true)),
+        where: (lps, { and, eq }) => and(eq(lps.slug, lpSlug), eq(lps.ativo, true)),
         limit: 1,
       },
     },
@@ -47,15 +47,15 @@ export async function generateMetadata({ params }: PageProps) {
   };
 }
 
-export default async function LandingPageNegocio({ params }: PageProps) {
-  const { slugNegocio } = await params;
+export default async function LandingPageServico({ params }: PageProps) {
+  const { slugNegocio, lpSlug } = await params;
 
   // Busca negócio pelo subdomínio (slug)
   const negocioDb = await bd.query.negocios.findFirst({
     where: eq(negocios.subdominio, slugNegocio),
     with: {
       landingPages: {
-        where: (lps, { and, eq }) => and(eq(lps.isPrincipal, true), eq(lps.ativo, true)),
+        where: (lps, { and, eq }) => and(eq(lps.slug, lpSlug), eq(lps.ativo, true)),
         limit: 1,
       },
       postagens: {
@@ -94,7 +94,7 @@ export default async function LandingPageNegocio({ params }: PageProps) {
     "@type": "LocalBusiness",
     name: negocioDb.nome,
     image: lp.imagemDestaque || negocioDb.logoUrl || "",
-    url: `https://${negocioDb.subdominio}.localseo.com.br`,
+    url: `https://${negocioDb.subdominio}.localseo.com.br/${lp.slug}`,
     telephone: lp.whatsapp || negocioDb.telefone,
     address: {
       "@type": "PostalAddress",
@@ -171,7 +171,7 @@ export default async function LandingPageNegocio({ params }: PageProps) {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/30 text-primary-foreground text-xs font-bold uppercase tracking-widest mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <Sparkles className="w-4 h-4 text-emerald-400" /> 
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">
-              Destaque na sua região
+              Serviço Especializado
             </span>
           </div>
 
@@ -225,7 +225,7 @@ export default async function LandingPageNegocio({ params }: PageProps) {
           <div className="container mx-auto px-4 max-w-6xl">
             <div className="text-center mb-16">
               <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-white mb-4">
-                Nossos Serviços
+                O que oferecemos neste serviço
               </h2>
               <p className="text-slate-400 text-lg max-w-2xl mx-auto">
                 Soluções projetadas sob medida com o mais alto padrão de qualidade do mercado.

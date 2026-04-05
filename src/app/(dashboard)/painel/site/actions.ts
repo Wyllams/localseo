@@ -3,10 +3,11 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { bd } from "@/db";
-import { negocios } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { negocios, landingPages } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { gerarConteudoSite } from "@/lib/ai/gerar-site";
+import { gerarSlug } from "@/lib/utils";
 
 /**
  * Salva a configuração do site e gera conteúdo com IA.
@@ -22,11 +23,15 @@ export async function salvarConfiguracaoSite(formData: FormData) {
 
   if (!negocioUser) return { erro: "Negócio não encontrado." };
 
-  // Extrair dados do formulário
   const servicosRaw = formData.get("servicos") as string;
   const servicos = servicosRaw
     ? servicosRaw.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
+
+  const servicoFoco = formData.get("servicoFoco") as string;
+  if (!servicoFoco) {
+    return { erro: "O Serviço Principal é obrigatório." };
+  }
 
   const nomeNegocio = (formData.get("nomeNegocio") as string) || negocioUser.nome;
   const nicho = (formData.get("nicho") as string) || negocioUser.categoria;
@@ -35,10 +40,11 @@ export async function salvarConfiguracaoSite(formData: FormData) {
   const whatsapp = (formData.get("whatsapp") as string) || "";
   let imagemDestaque = formData.get("imagemDestaque") as string;
 
-  // Gerar conteúdo textual com IA
+  // Gerar conteúdo textual com IA focado no Serviço
   const conteudo = await gerarConteudoSite({
     nomeNegocio,
     nicho,
+    servicoFoco,
     servicos,
     diferencial,
     tomVoz: tomVoz as "profissional" | "descontraido" | "agressivo",
@@ -52,21 +58,37 @@ export async function salvarConfiguracaoSite(formData: FormData) {
     imagemDestaque = await buscarImagemUnsplash(conteudo.termoImagem || "business");
   }
 
-  // Salvar tudo no banco
-  await bd
-    .update(negocios)
-    .set({
-      siteAtivo: true,
-      siteHeadline: conteudo.headline,
-      siteSubtitulo: conteudo.subtitulo,
-      siteServicos: servicos,
-      siteDiferencial: diferencial,
-      siteTomVoz: tomVoz,
-      siteWhatsapp: whatsapp,
-      siteImagemDestaque: imagemDestaque,
-      atualizadoEm: new Date(),
-    })
-    .where(eq(negocios.id, negocioUser.id));
+  const totalLps = await bd.query.landingPages.findMany({
+    where: eq(landingPages.negocioId, negocioUser.id),
+  });
+
+  const isPrincipal = totalLps.length === 0;
+
+  // Cria um slug seguro para o serviço foco
+  const baseSlug = gerarSlug(servicoFoco);
+  let finalSlug = baseSlug;
+  // Previne slugs duplicados no mesmo negócio
+  let count = 1;
+  while (totalLps.some(lp => lp.slug === finalSlug)) {
+    finalSlug = `${baseSlug}-${count}`;
+    count++;
+  }
+
+  // Inserir registro na tabela landing_pages
+  await bd.insert(landingPages).values({
+    negocioId: negocioUser.id,
+    servicoFoco,
+    slug: finalSlug,
+    isPrincipal,
+    headline: conteudo.headline,
+    subtitulo: conteudo.subtitulo,
+    servicos,
+    diferencial,
+    tomVoz,
+    whatsapp,
+    imagemDestaque,
+    ativo: true,
+  });
 
   revalidatePath("/painel/site");
   revalidatePath(`/site/${negocioUser.subdominio}`);
@@ -74,10 +96,7 @@ export async function salvarConfiguracaoSite(formData: FormData) {
   return { sucesso: true };
 }
 
-/**
- * Exclui a Landing Page zerando todos os dados preenchidos.
- */
-export async function excluirSite() {
+export async function excluirLandingPage(formData: FormData) {
   const sessao = await auth.api.getSession({ headers: await headers() });
   if (!sessao?.user?.id) return;
 
@@ -87,29 +106,18 @@ export async function excluirSite() {
 
   if (!negocioUser) return;
 
-  await bd
-    .update(negocios)
-    .set({
-      siteAtivo: false,
-      siteHeadline: null,
-      siteSubtitulo: null,
-      siteServicos: null,
-      siteDiferencial: null,
-      siteTomVoz: null,
-      siteWhatsapp: null,
-      siteImagemDestaque: null,
-      atualizadoEm: new Date(),
-    })
-    .where(eq(negocios.id, negocioUser.id));
+  const lpId = formData.get("lpId") as string;
+  if (!lpId) return;
+
+  await bd.delete(landingPages).where(and(
+    eq(landingPages.id, lpId),
+    eq(landingPages.negocioId, negocioUser.id) // Ensure only owner deletes
+  ));
 
   revalidatePath("/painel/site");
-  revalidatePath(`/site/${negocioUser.subdominio}`);
 }
 
-/**
- * Ativa ou desativa o site público sem apagar os dados cadastrados.
- */
-export async function toggleSite(formData: FormData) {
+export async function toggleLandingPage(formData: FormData) {
   const sessao = await auth.api.getSession({ headers: await headers() });
   if (!sessao?.user?.id) return;
 
@@ -119,16 +127,21 @@ export async function toggleSite(formData: FormData) {
 
   if (!negocioUser) return;
 
+  const lpId = formData.get("lpId") as string;
   const novoStatus = formData.get("ativo") === "true";
 
+  if (!lpId) return;
+
   await bd
-    .update(negocios)
+    .update(landingPages)
     .set({
-      siteAtivo: novoStatus,
+      ativo: novoStatus,
       atualizadoEm: new Date(),
     })
-    .where(eq(negocios.id, negocioUser.id));
+    .where(and(
+      eq(landingPages.id, lpId),
+      eq(landingPages.negocioId, negocioUser.id)
+    ));
 
   revalidatePath("/painel/site");
-  revalidatePath(`/site/${negocioUser.subdominio}`);
 }

@@ -10,6 +10,7 @@
 interface ContextoSite {
   nomeNegocio: string;
   nicho: string;
+  servicoFoco: string;
   servicos: string[];
   diferencial: string;
   tomVoz: "profissional" | "descontraido" | "agressivo";
@@ -43,21 +44,22 @@ export async function gerarConteudoSite(
     agressivo: "urgente, comercial, com senso de escassez e chamadas fortes de ação",
   };
 
-  const prompt = `Você é um copywriter profissional especialista em negócios locais brasileiros.
+  const prompt = `Você é um copywriter profissional especialista em funis de venda e negócios locais brasileiros.
 
-Crie o conteúdo textual para uma Landing Page de alta conversão com as seguintes informações:
+Crie o conteúdo textual para uma Landing Page de alta conversão, desenhada para vender UM ÚNICO SERVIÇO, com as seguintes informações:
 
 NEGÓCIO: ${contexto.nomeNegocio}
 NICHO: ${contexto.nicho}
+SERVIÇO FOCO DA PÁGINA: ${contexto.servicoFoco}
+CARACTERÍSTICAS / INCLUSO NO SERVIÇO: ${contexto.servicos.join(", ")}
+DIFERENCIAL COMPETITIVO: ${contexto.diferencial}
 CIDADE: ${contexto.cidade}${contexto.estado ? ` - ${contexto.estado}` : ""}
-SERVIÇOS PRINCIPAIS: ${contexto.servicos.join(", ")}
-DIFERENCIAL: ${contexto.diferencial}
 TOM DE VOZ: ${tomDescricao[contexto.tomVoz]}
 
-REGRAS:
-1. A headline deve ter no MÁXIMO 60 caracteres, ser impactante e conter a cidade.
-2. O subtítulo deve ter entre 100 e 200 caracteres, explicar o que o negócio faz e reforçar o diferencial.
-3. Forneça o "termoImagem": 1 ou 2 palavras cruciais em INGLÊS que representem visualmente o nicho para busca numa galeria de fotos (Unsplash). Ex: se For barbearia: "barbershop", clinica: "doctor clinic", software: "technology code", hamburgueria: "burger".
+REGRAS ESTITAS:
+1. A headline deve focar 100% no SERVIÇO FOCO (${contexto.servicoFoco}). Ter no MÁXIMO 70 caracteres, ser impactante e desejavelmente conter a cidade.
+2. O subtítulo deve ter entre 100 e 200 caracteres, vender o serviço foco e reforçar o diferencial em relação aos concorrentes.
+3. Forneça o "termoImagem": 1 ou 2 palavras em INGLÊS que representem visualmente ESSE SERVIÇO FOCO para busca no Unsplash. Ex: se for Implante Dentário: "dental implant", se for Casamento: "wedding".
 4. Responda EXATAMENTE no formato JSON abaixo, sem markdown, sem código, apenas o JSON puro:
 {"headline": "...", "subtitulo": "...", "termoImagem": "..."}`;
 
@@ -114,11 +116,9 @@ REGRAS:
  * Gera textos genéricos mas coerentes com o contexto.
  */
 function gerarFallback(contexto: ContextoSite): ConteudoGerado {
-  const servicosPrincipais = contexto.servicos.slice(0, 3).join(", ");
-  
   return {
-    headline: `${contexto.nomeNegocio} — Referência em ${contexto.cidade}`,
-    subtitulo: `Especialistas em ${servicosPrincipais}. ${contexto.diferencial}. Atendemos em ${contexto.cidade}${contexto.estado ? ` - ${contexto.estado}` : ""} com excelência e dedicação total.`,
-    termoImagem: "business office",
+    headline: `Melhor ${contexto.servicoFoco} em ${contexto.cidade}`,
+    subtitulo: `Especialistas em ${contexto.servicoFoco}. ${contexto.diferencial}. Atendemos em ${contexto.cidade}${contexto.estado ? ` - ${contexto.estado}` : ""} oferecendo o melhor resultado para você.`,
+    termoImagem: "business service",
   };
 }

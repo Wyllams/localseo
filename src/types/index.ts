@@ -16,7 +16,7 @@ export type CategoriaNegocio =
   | "SERVICOS"
   | "OUTRO";
 
-export type PlanoAssinatura = "INICIAL" | "PRO" | "PRO_PLUS" | "AGENCIA";
+export type PlanoAssinatura = "INICIAL" | "PRO" | "PRO_PLUS";
 
 export interface Negocio {
   id: string;
@@ -176,20 +176,6 @@ export const PLANOS: InfoPlano[] = [
       "Artigos SEO ilimitados",
       "Relatório via WhatsApp",
       "Suporte prioritário",
-    ],
-  },
-  {
-    id: "AGENCIA",
-    nome: "Agência",
-    preco: 697,
-    descricao: "Para agências que gerenciam múltiplos clientes",
-    funcionalidades: [
-      "Tudo do plano Pro+",
-      "Até 10 negócios",
-      "Painel centralizado",
-      "White-label",
-      "API de integração",
-      "Gerente de conta dedicado",
     ],
   },
 ];

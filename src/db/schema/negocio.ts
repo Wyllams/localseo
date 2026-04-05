@@ -76,6 +76,7 @@ export const negociosRelacoes = relations(negocios, ({ many }) => ({
   avaliacoes: many(avaliacoes),
   execucoesAgente: many(execucoesAgente),
   pontuacoesPresenca: many(pontuacoesPresenca),
+  landingPages: many(landingPages),
 }));
 
 /* ===== Import circular-safe: Declarações forward das tabelas ===== */
@@ -84,3 +85,4 @@ import { postagens } from "./postagem";
 import { avaliacoes } from "./avaliacao";
 import { execucoesAgente } from "./execucao-agente";
 import { pontuacoesPresenca } from "./pontuacao-presenca";
+import { landingPages } from "./landing-page";

@@ -11,6 +11,7 @@ export { avaliacoes, enumSentimento } from "./avaliacao";
 export { execucoesAgente, enumTipoAgente, enumStatusExecucao } from "./execucao-agente";
 export { pontuacoesPresenca } from "./pontuacao-presenca";
 export { user, session, account, verification } from "./auth";
+export { landingPages } from "./landing-page";
 
 // Relações
 export { negociosRelacoes } from "./negocio";
@@ -19,3 +20,4 @@ export { postagensRelacoes } from "./postagem";
 export { avaliacoesRelacoes } from "./avaliacao";
 export { execucoesAgenteRelacoes } from "./execucao-agente";
 export { pontuacoesPresencaRelacoes } from "./pontuacao-presenca";
+export { landingPagesRelacoes } from "./landing-page";

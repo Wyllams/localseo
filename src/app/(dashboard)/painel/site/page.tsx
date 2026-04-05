@@ -2,36 +2,32 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { bd } from "@/db";
-import { negocios } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { negocios, landingPages } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
 import { getAcessoPlano } from "@/lib/planos";
 import { Paywall } from "@/components/paywall";
 import type { PlanoAssinatura } from "@/types";
 import { FormularioSite } from "./formulario-site";
-import { toggleSite, excluirSite } from "./actions";
+import { toggleLandingPage, excluirLandingPage } from "./actions";
 import {
   Globe,
   ExternalLink,
-  Pencil,
   Power,
   PowerOff,
   Sparkles,
   LayoutTemplate,
-  Zap,
-  MessageCircle,
-  ShieldCheck,
-  RefreshCw,
   Trash2,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 
-export default async function PaginaSite({
+export default async function PaginaLandingPages({
   searchParams,
 }: {
-  searchParams: Promise<{ editar?: string }>;
+  searchParams: Promise<{ criar?: string }>;
 }) {
   const params = await searchParams;
-  const modoEdicao = params.editar === "true";
+  const modoCriacao = params.criar === "true";
 
   const sessao = await auth.api.getSession({ headers: await headers() });
 
@@ -54,212 +50,85 @@ export default async function PaginaSite({
   if (!acesso.siteLiberado) {
     return (
       <Paywall
-        feature="Construtor de Site IA"
+        feature="Construtor de Landing Pages IA"
         planoMinimo="Pro"
-        descricao="Crie uma Landing Page completa gerada por Inteligência Artificial, 100% otimizada para SEO local. Disponível a partir do plano Pro."
+        descricao="Crie Landing Pages ilimitadas geradas por Inteligência Artificial focadas em serviços específicos. Disponível a partir do plano Pro."
       />
     );
   }
 
-  const siteConfigurado = !!(negocioUser.siteHeadline && negocioUser.siteServicos);
-  const urlSite = `/site/${negocioUser.subdominio}`;
+  const paginas = await bd.query.landingPages.findMany({
+    where: eq(landingPages.negocioId, negocioUser.id),
+    orderBy: [desc(landingPages.criadoEm)],
+  });
 
   // ============================
-  // ESTADO 2: Site já configurado
+  // ESTADO 2: MODO CRIAÇÃO (Ou primeira vez)
   // ============================
-  if (siteConfigurado && !modoEdicao) {
-    const servicos = (negocioUser.siteServicos as string[] | null) ?? [];
-
+  if (modoCriacao || paginas.length === 0) {
     return (
       <div className="space-y-8 animate-fade-in">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-              Meu Site
+              {paginas.length === 0 ? "Construir Primeira Landing Page" : "Nova Landing Page"}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Gerencie sua Landing Page gerada por IA.
+              A IA criará uma página de alta conversão focada no seu serviço.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          {paginas.length > 0 && (
             <Link
-              href={urlSite}
-              target="_blank"
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity"
+              href="/painel/site"
+              className="px-4 py-2 text-sm font-medium border rounded-xl hover:bg-muted"
             >
-              <ExternalLink className="w-4 h-4" />
-              Visitar Site
+              Cancelar
             </Link>
-          </div>
+          )}
         </div>
 
-        {/* Preview Card */}
-        <div className="glass-card p-8 border border-border relative overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-1 gradient-primary" />
-
-          <div className="flex flex-col lg:flex-row lg:items-start gap-8">
-            {/* Info */}
-            <div className="flex-1 min-w-0 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-                  <Globe className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-lg">{negocioUser.nome}</h2>
-                  <p className="text-xs text-muted-foreground">
-                    {negocioUser.subdominio}.localseo.com.br
-                  </p>
-                </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-3 glass-card p-6 sm:p-8 border border-border">
+            <div className="flex items-center gap-3 mb-6 pb-6 border-b border-border/50">
+              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+                <LayoutTemplate className="w-5 h-5 text-white" />
               </div>
-
-              {/* Headline Preview */}
-              <div className="bg-muted/30 rounded-xl p-5 border border-border/50">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">
-                  Headline (IA)
+              <div>
+                <h2 className="font-bold text-lg">Setup da Página</h2>
+                <p className="text-xs text-muted-foreground">
+                  Foque a página num serviço que você quer vender
                 </p>
-                <p className="text-lg font-bold text-foreground leading-snug">
-                  {negocioUser.siteHeadline}
-                </p>
-                {negocioUser.siteSubtitulo && (
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                    {negocioUser.siteSubtitulo}
-                  </p>
-                )}
-              </div>
-
-              {/* Serviços */}
-              {servicos.length > 0 && (
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">
-                    Serviços Exibidos
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {servicos.map((s, i) => (
-                      <span
-                        key={i}
-                        className="px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-medium"
-                      >
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* WhatsApp */}
-              {negocioUser.siteWhatsapp && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MessageCircle className="w-4 h-4 text-emerald-500" />
-                  <span>WhatsApp: {negocioUser.siteWhatsapp}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col gap-3 shrink-0 lg:w-52">
-              {/* Status Badge */}
-              <div
-                className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold ${
-                  negocioUser.siteAtivo
-                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                    : "bg-destructive/10 text-destructive border-destructive/20"
-                }`}
-              >
-                {negocioUser.siteAtivo ? (
-                  <>
-                    <ShieldCheck className="w-4 h-4" /> Site Ativo
-                  </>
-                ) : (
-                  <>
-                    <PowerOff className="w-4 h-4" /> Site Desativado
-                  </>
-                )}
-              </div>
-
-              {/* Toggle */}
-              <form action={toggleSite}>
-                <input
-                  type="hidden"
-                  name="ativo"
-                  value={negocioUser.siteAtivo ? "false" : "true"}
-                />
-                <button
-                  type="submit"
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${
-                    negocioUser.siteAtivo
-                      ? "border-destructive/30 text-destructive hover:bg-destructive/10"
-                      : "border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10"
-                  }`}
-                >
-                  {negocioUser.siteAtivo ? (
-                    <>
-                      <PowerOff className="w-4 h-4" /> Desativar
-                    </>
-                  ) : (
-                    <>
-                      <Power className="w-4 h-4" /> Ativar
-                    </>
-                  )}
-                </button>
-              </form>
-
-              {/* Botões de Ação Extras */}
-              <div className="pt-4 mt-2 border-t border-border/50 flex flex-col gap-3">
-                <Link
-                  href="/painel/site?editar=true"
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/10 text-sm font-medium transition-colors"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Editar / Refazer
-                </Link>
-
-                <form action={excluirSite}>
-                  <button
-                    type="submit"
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm font-medium transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Excluir Site
-                  </button>
-                </form>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="glass-card p-5 flex items-start gap-4">
-            <div className="p-2.5 bg-blue-500/10 rounded-xl">
-              <Zap className="w-5 h-5 text-blue-500" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm">SEO Automático</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Schema.org e meta tags são gerados automaticamente.
-              </p>
-            </div>
+            <FormularioSite
+              nomeNegocio={negocioUser.nome}
+              categoria={negocioUser.categoria}
+              telefoneExistente={negocioUser.telefone}
+              nichoDefault={negocioUser.categoria}
+            />
           </div>
-          <div className="glass-card p-5 flex items-start gap-4">
-            <div className="p-2.5 bg-amber-500/10 rounded-xl">
-              <Sparkles className="w-5 h-5 text-amber-500" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm">Conteúdo Vivo</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Postagens GMB e artigos de blog aparecem automaticamente.
-              </p>
-            </div>
-          </div>
-          <div className="glass-card p-5 flex items-start gap-4">
-            <div className="p-2.5 bg-emerald-500/10 rounded-xl">
-              <Globe className="w-5 h-5 text-emerald-500" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-sm">Domínio Próprio</h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Em breve: conecte seu domínio .com.br ao site.
-              </p>
+
+          <div className="lg:col-span-2 space-y-4">
+            <div className="glass-card p-6 border border-primary/20 bg-primary/5">
+              <div className="flex items-center gap-2 text-primary mb-3">
+                <Sparkles className="w-5 h-5" />
+                <span className="font-bold text-sm">Como funciona?</span>
+              </div>
+              <ol className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-xs font-bold">1</span>
+                  <span>Defina um "Serviço Foco" (ex: Implante, Corte Fade).</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-xs font-bold">2</span>
+                  <span>A IA Gemini cria uma copy inteira focada em vender esse serviço.</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-xs font-bold">3</span>
+                  <span>A página vai ao ar em uma URL única vinculada a você.</span>
+                </li>
+              </ol>
             </div>
           </div>
         </div>
@@ -268,116 +137,133 @@ export default async function PaginaSite({
   }
 
   // ============================
-  // ESTADO 1: Setup Inicial
+  // ESTADO 1: LISTAGEM DE LANDING PAGES
   // ============================
   return (
     <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-          Construir Meu Site
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Preencha as informações e a IA criará sua Landing Page em segundos.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+            Minhas Landing Pages
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Gerencie suas páginas de alta conversão. ({paginas.length} criadas)
+          </p>
+        </div>
+        <Link
+          href="/painel/site?criar=true"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+        >
+          <Plus className="w-4 h-4" />
+          Nova Landing Page
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-        {/* Formulário */}
-        <div className="lg:col-span-3 glass-card p-6 sm:p-8 border border-border">
-          <div className="flex items-center gap-3 mb-6 pb-6 border-b border-border/50">
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-              <LayoutTemplate className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="font-bold text-lg">Setup do Site</h2>
-              <p className="text-xs text-muted-foreground">
-                A IA usará essas informações para gerar o conteúdo
-              </p>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {paginas.map((lp) => {
+          const urlSite = lp.isPrincipal
+            ? `/site/${negocioUser.subdominio}`
+            : `/site/${negocioUser.subdominio}/${lp.slug}`;
+          const isAtivo = lp.ativo;
 
-          <FormularioSite
-            nomeNegocio={negocioUser.nome}
-            categoria={negocioUser.categoria}
-            telefoneExistente={negocioUser.telefone}
-            nichoDefault={negocioUser.categoria} // Optional
-            servicosDefault={(negocioUser.siteServicos as string[]) || []}
-            diferencialDefault={negocioUser.siteDiferencial}
-            tomVozDefault={negocioUser.siteTomVoz}
-            whatsappDefault={negocioUser.siteWhatsapp}
-            imagemDestaqueDefault={negocioUser.siteImagemDestaque}
-          />
-        </div>
+          return (
+            <div
+              key={lp.id}
+              className={`glass-card border flex flex-col overflow-hidden relative ${
+                isAtivo ? "border-border" : "border-destructive/30 opacity-75"
+              }`}
+            >
+              {lp.isPrincipal && (
+                <div className="absolute top-3 right-3 px-2 py-1 bg-amber-500 text-white font-bold text-[10px] rounded-lg shadow-sm">
+                  PÁGINA PRINCIPAL
+                </div>
+              )}
 
-        {/* Sidebar Informativa */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="glass-card p-6 border border-primary/20 bg-primary/5">
-            <div className="flex items-center gap-2 text-primary mb-3">
-              <Sparkles className="w-5 h-5" />
-              <span className="font-bold text-sm">Como funciona?</span>
+              {/* Cover genérica ou Imagem da LP */}
+              <div
+                className="h-32 w-full bg-cover bg-center border-b border-border relative"
+                style={{
+                  backgroundImage: `url(${
+                    lp.imagemDestaque ||
+                    "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=600&auto=format&fit=crop"
+                  })`,
+                }}
+              >
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+                <div className="absolute inset-0 p-5 flex flex-col justify-end">
+                  <h3 className="text-white font-bold text-lg drop-shadow line-clamp-1">
+                    {lp.servicoFoco}
+                  </h3>
+                  <span className="text-white/80 text-xs font-medium">/{lp.slug}</span>
+                </div>
+              </div>
+
+              <div className="p-5 flex-1 flex flex-col gap-4">
+                <div className="bg-muted/30 rounded-xl p-3 border border-border/50 flex-1">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-1">
+                    Headline (IA)
+                  </p>
+                  <p className="text-sm font-semibold text-foreground leading-snug line-clamp-3">
+                    {lp.headline}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-border pt-4 mt-auto">
+                  <form action={toggleLandingPage} className="w-fit">
+                    <input type="hidden" name="lpId" value={lp.id} />
+                    <input
+                      type="hidden"
+                      name="ativo"
+                      value={isAtivo ? "false" : "true"}
+                    />
+                    <button
+                      type="submit"
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                        isAtivo
+                          ? "border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10"
+                          : "border-destructive/30 text-destructive hover:bg-destructive/10"
+                      }`}
+                    >
+                      {isAtivo ? (
+                        <>
+                          <Power className="w-3 h-3" /> Online
+                        </>
+                      ) : (
+                        <>
+                          <PowerOff className="w-3 h-3" /> Offline
+                        </>
+                      )}
+                    </button>
+                  </form>
+
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={urlSite}
+                      target="_blank"
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                      title="Visitar Landing Page"
+                    >
+                      <Globe className="w-4 h-4" />
+                    </Link>
+                    <form action={excluirLandingPage}>
+                      <input type="hidden" name="lpId" value={lp.id} />
+                      <button
+                        type="submit"
+                        className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                        title="Excluir Landing Page"
+                        onClick={(e) => {
+                          if (!confirm("Tem certeza que deseja excluir esta Landing Page?")) e.preventDefault();
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
             </div>
-            <ol className="space-y-3 text-sm text-muted-foreground">
-              <li className="flex gap-3">
-                <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-xs font-bold">
-                  1
-                </span>
-                <span>Você preenche os dados do seu negócio ao lado.</span>
-              </li>
-              <li className="flex gap-3">
-                <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-xs font-bold">
-                  2
-                </span>
-                <span>
-                  A IA Gemini cria textos de alta conversão (headline +
-                  descrição).
-                </span>
-              </li>
-              <li className="flex gap-3">
-                <span className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 text-xs font-bold">
-                  3
-                </span>
-                <span>
-                  Seu site vai ao ar instantaneamente, já puxando seus posts do
-                  GMB e artigos de blog.
-                </span>
-              </li>
-            </ol>
-          </div>
-
-          <div className="glass-card p-6">
-            <h3 className="font-semibold text-sm mb-3">O que será gerado:</h3>
-            <ul className="space-y-2 text-xs text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Headline de impacto (otimizada para SEO)
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Descrição persuasiva
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Seção de Serviços
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Botão de WhatsApp (CTA)
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Feed automático de Postagens GMB
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Feed automático de Artigos de Blog
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Schema.org LocalBusiness (SEO técnico)
-              </li>
-            </ul>
-          </div>
-        </div>
+          );
+        })}
       </div>
     </div>
   );
