@@ -66,20 +66,17 @@ export function FormularioSite({
 
   return (
     <form action={handleSubmit} className="space-y-6">
-      {/* Nome do Negócio (read-only) */}
+      {/* Nome do Negócio */}
       <div>
         <label className="block text-sm font-semibold text-foreground mb-2">
           Nome do Negócio
         </label>
         <input
           type="text"
-          value={nomeNegocio}
-          disabled
-          className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground/70 text-sm cursor-not-allowed"
+          name="nomeNegocio"
+          defaultValue={nomeNegocio}
+          className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary/50 outline-none transition-all"
         />
-        <p className="text-xs text-muted-foreground mt-1">
-          Alterar via Configurações.
-        </p>
       </div>
 
       {/* Nicho */}
@@ -89,9 +86,10 @@ export function FormularioSite({
         </label>
         <input
           type="text"
-          value={categoria.replace(/_/g, " ")}
-          disabled
-          className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground/70 text-sm cursor-not-allowed"
+          name="nicho"
+          defaultValue={categoria.replace(/_/g, " ")}
+          placeholder="Ex: Barbearia, Advocacia, Desentupidora..."
+          className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary/50 outline-none transition-all"
         />
       </div>
 

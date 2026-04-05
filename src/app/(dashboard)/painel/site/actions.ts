@@ -28,14 +28,16 @@ export async function salvarConfiguracaoSite(formData: FormData) {
     ? servicosRaw.split(",").map((s) => s.trim()).filter(Boolean)
     : [];
 
+  const nomeNegocio = (formData.get("nomeNegocio") as string) || negocioUser.nome;
+  const nicho = (formData.get("nicho") as string) || negocioUser.categoria;
   const tomVoz = (formData.get("tomVoz") as string) || "profissional";
   const diferencial = (formData.get("diferencial") as string) || "";
   const whatsapp = (formData.get("whatsapp") as string) || "";
 
   // Gerar conteúdo com IA
   const conteudo = await gerarConteudoSite({
-    nomeNegocio: negocioUser.nome,
-    nicho: negocioUser.categoria,
+    nomeNegocio,
+    nicho,
     servicos,
     diferencial,
     tomVoz: tomVoz as "profissional" | "descontraido" | "agressivo",
