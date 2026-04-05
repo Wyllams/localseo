@@ -60,6 +60,7 @@ export const negocios = pgTable("negocios", {
   siteTomVoz: varchar("site_tom_voz", { length: 50 }),
   siteWhatsapp: varchar("site_whatsapp", { length: 20 }),
   siteCor: varchar("site_cor", { length: 7 }),
+  siteImagemDestaque: varchar("site_imagem_destaque", { length: 500 }),
   criadoEm: timestamp("criado_em", { withTimezone: true, mode: "date" })
     .notNull()
     .defaultNow(),

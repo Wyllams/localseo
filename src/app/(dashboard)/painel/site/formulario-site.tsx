@@ -8,6 +8,13 @@ interface PropsFormulario {
   nomeNegocio: string;
   categoria: string;
   telefoneExistente?: string | null;
+  // Valores default para edição
+  nichoDefault?: string | null;
+  servicosDefault?: string[] | null;
+  diferencialDefault?: string | null;
+  tomVozDefault?: string | null;
+  whatsappDefault?: string | null;
+  imagemDestaqueDefault?: string | null;
 }
 
 /**
@@ -18,8 +25,14 @@ export function FormularioSite({
   nomeNegocio,
   categoria,
   telefoneExistente,
+  nichoDefault,
+  servicosDefault,
+  diferencialDefault,
+  tomVozDefault,
+  whatsappDefault,
+  imagemDestaqueDefault,
 }: PropsFormulario) {
-  const [servicos, setServicos] = useState<string[]>([""]);
+  const [servicos, setServicos] = useState<string[]>(servicosDefault && servicosDefault.length > 0 ? servicosDefault : [""]);
   const [novoServico, setNovoServico] = useState("");
   const [isPending, startTransition] = useTransition();
   const [mensagem, setMensagem] = useState<{
@@ -60,6 +73,9 @@ export function FormularioSite({
           tipo: "sucesso",
           texto: "Site gerado com sucesso! Já está no ar.",
         });
+        setTimeout(() => {
+          window.location.href = "/painel/site";
+        }, 1000);
       }
     });
   }
@@ -87,7 +103,7 @@ export function FormularioSite({
         <input
           type="text"
           name="nicho"
-          defaultValue={categoria.replace(/_/g, " ")}
+          defaultValue={nichoDefault || categoria.replace(/_/g, " ")}
           placeholder="Ex: Barbearia, Advocacia, Desentupidora..."
           className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary/50 outline-none transition-all"
         />
@@ -150,6 +166,7 @@ export function FormularioSite({
         <textarea
           name="diferencial"
           rows={3}
+          defaultValue={diferencialDefault || ""}
           placeholder="Ex: 15 anos no mercado, estacionamento grátis, atendimento 24h..."
           className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary/30 focus:border-primary/50 outline-none transition-all resize-none"
           required
@@ -163,13 +180,32 @@ export function FormularioSite({
         </label>
         <select
           name="tomVoz"
-          defaultValue="profissional"
+          defaultValue={tomVozDefault || "profissional"}
           className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary/50 outline-none transition-all"
         >
           <option value="profissional">🏢 Profissional / Sério</option>
           <option value="descontraido">😊 Descontraído / Amigável</option>
           <option value="agressivo">🔥 Agressivo Comercial</option>
         </select>
+      </div>
+
+      {/* Imagem de Destaque */}
+      <div className="bg-muted/30 p-5 rounded-2xl border border-border/50 space-y-3">
+        <div>
+          <label className="block text-sm font-semibold text-foreground mb-1">
+            URL da Imagem de Destaque <span className="text-muted-foreground font-normal">(Opcional)</span>
+          </label>
+          <p className="text-xs text-muted-foreground mb-3">
+            Se você não colocar nenhuma imagem, a nossa <strong>Inteligência Artificial</strong> buscará uma imagem profissional de alta qualidade baseada no seu nicho! Se colocar, usaremos a sua.
+          </p>
+        </div>
+        <input
+          type="url"
+          name="imagemDestaque"
+          defaultValue={imagemDestaqueDefault || ""}
+          placeholder="Ex: https://seusite.com.br/foto.jpg"
+          className="w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground text-sm placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary/30 focus:border-primary/50 outline-none transition-all"
+        />
       </div>
 
       {/* WhatsApp */}

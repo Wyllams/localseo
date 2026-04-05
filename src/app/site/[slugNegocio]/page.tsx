@@ -170,7 +170,7 @@ export default async function LandingPageNegocio({ params }: PageProps) {
               `A excelência em ${negocioDb.categoria} que você precisava.`}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 animate-in fade-in zoom-in-95 duration-700 delay-500">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 animate-in fade-in zoom-in-95 duration-700 delay-500 mb-16">
             {whatsappLink && (
               <a
                 href={whatsappLink}
@@ -189,6 +189,16 @@ export default async function LandingPageNegocio({ params }: PageProps) {
               {negocioDb.cidade} - {negocioDb.estado}
             </div>
           </div>
+
+          {negocioDb.siteImagemDestaque && (
+            <div className="w-full max-w-4xl mx-auto rounded-3xl overflow-hidden glass border border-white/10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-700">
+              <img 
+                src={negocioDb.siteImagemDestaque} 
+                alt={`Trabalho e serviços de ${negocioDb.nome}`}
+                className="w-full h-auto aspect-video sm:aspect-[21/9] object-cover hover:scale-105 transition-transform duration-[20s] ease-linear"
+              />
+            </div>
+          )}
         </div>
       </header>
 

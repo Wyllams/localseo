@@ -33,8 +33,9 @@ export async function salvarConfiguracaoSite(formData: FormData) {
   const tomVoz = (formData.get("tomVoz") as string) || "profissional";
   const diferencial = (formData.get("diferencial") as string) || "";
   const whatsapp = (formData.get("whatsapp") as string) || "";
+  let imagemDestaque = formData.get("imagemDestaque") as string;
 
-  // Gerar conteúdo com IA
+  // Gerar conteúdo textual com IA
   const conteudo = await gerarConteudoSite({
     nomeNegocio,
     nicho,
@@ -44,6 +45,12 @@ export async function salvarConfiguracaoSite(formData: FormData) {
     cidade: negocioUser.cidade,
     estado: negocioUser.estado,
   });
+
+  // Se = não enviou imagem, a IA busca uma baseada no nicho
+  if (!imagemDestaque || imagemDestaque.trim() === "") {
+    const { buscarImagemUnsplash } = await import("@/lib/unsplash");
+    imagemDestaque = await buscarImagemUnsplash(`${nicho} ${servicos[0] || ""}`.trim());
+  }
 
   // Salvar tudo no banco
   await bd
@@ -56,6 +63,7 @@ export async function salvarConfiguracaoSite(formData: FormData) {
       siteDiferencial: diferencial,
       siteTomVoz: tomVoz,
       siteWhatsapp: whatsapp,
+      siteImagemDestaque: imagemDestaque,
       atualizadoEm: new Date(),
     })
     .where(eq(negocios.id, negocioUser.id));
@@ -64,6 +72,38 @@ export async function salvarConfiguracaoSite(formData: FormData) {
   revalidatePath(`/site/${negocioUser.subdominio}`);
 
   return { sucesso: true };
+}
+
+/**
+ * Exclui a Landing Page zerando todos os dados preenchidos.
+ */
+export async function excluirSite() {
+  const sessao = await auth.api.getSession({ headers: await headers() });
+  if (!sessao?.user?.id) return;
+
+  const negocioUser = await bd.query.negocios.findFirst({
+    where: eq(negocios.donoId, sessao.user.id),
+  });
+
+  if (!negocioUser) return;
+
+  await bd
+    .update(negocios)
+    .set({
+      siteAtivo: false,
+      siteHeadline: null,
+      siteSubtitulo: null,
+      siteServicos: null,
+      siteDiferencial: null,
+      siteTomVoz: null,
+      siteWhatsapp: null,
+      siteImagemDestaque: null,
+      atualizadoEm: new Date(),
+    })
+    .where(eq(negocios.id, negocioUser.id));
+
+  revalidatePath("/painel/site");
+  revalidatePath(`/site/${negocioUser.subdominio}`);
 }
 
 /**

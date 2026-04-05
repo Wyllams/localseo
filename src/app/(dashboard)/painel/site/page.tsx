@@ -8,7 +8,7 @@ import { getAcessoPlano } from "@/lib/planos";
 import { Paywall } from "@/components/paywall";
 import type { PlanoAssinatura } from "@/types";
 import { FormularioSite } from "./formulario-site";
-import { toggleSite } from "./actions";
+import { toggleSite, excluirSite } from "./actions";
 import {
   Globe,
   ExternalLink,
@@ -20,10 +20,19 @@ import {
   Zap,
   MessageCircle,
   ShieldCheck,
+  RefreshCw,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 
-export default async function PaginaSite() {
+export default async function PaginaSite({
+  searchParams,
+}: {
+  searchParams: Promise<{ editar?: string }>;
+}) {
+  const params = await searchParams;
+  const modoEdicao = params.editar === "true";
+
   const sessao = await auth.api.getSession({ headers: await headers() });
 
   if (!sessao?.user?.id) {
@@ -58,7 +67,7 @@ export default async function PaginaSite() {
   // ============================
   // ESTADO 2: Site já configurado
   // ============================
-  if (siteConfigurado) {
+  if (siteConfigurado && !modoEdicao) {
     const servicos = (negocioUser.siteServicos as string[] | null) ?? [];
 
     return (
@@ -193,6 +202,27 @@ export default async function PaginaSite() {
                   )}
                 </button>
               </form>
+
+              {/* Botões de Ação Extras */}
+              <div className="pt-4 mt-2 border-t border-border/50 flex flex-col gap-3">
+                <Link
+                  href="/painel/site?editar=true"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-primary/30 text-primary hover:bg-primary/10 text-sm font-medium transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Editar / Refazer
+                </Link>
+
+                <form action={excluirSite}>
+                  <button
+                    type="submit"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm font-medium transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Excluir Site
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
@@ -270,6 +300,12 @@ export default async function PaginaSite() {
             nomeNegocio={negocioUser.nome}
             categoria={negocioUser.categoria}
             telefoneExistente={negocioUser.telefone}
+            nichoDefault={negocioUser.categoria} // Optional
+            servicosDefault={(negocioUser.siteServicos as string[]) || []}
+            diferencialDefault={negocioUser.siteDiferencial}
+            tomVozDefault={negocioUser.siteTomVoz}
+            whatsappDefault={negocioUser.siteWhatsapp}
+            imagemDestaqueDefault={negocioUser.siteImagemDestaque}
           />
         </div>
 
