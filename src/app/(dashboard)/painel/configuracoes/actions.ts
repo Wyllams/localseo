@@ -67,3 +67,66 @@ export async function salvarConfiguracaoGMB(accountName: string, locationName: s
     return { erro: "Erro ao salvar no banco." };
   }
 }
+
+import { user } from "@/db/schema";
+import { revalidatePath } from "next/cache";
+
+export async function atualizarPerfilUsuario(formData: FormData) {
+  const sessao = await auth.api.getSession({ headers: await headers() });
+  
+  if (!sessao?.user?.id) {
+    throw new Error("Não autorizado");
+  }
+
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const telefone = formData.get("telefone") as string;
+  const endereco = formData.get("endereco") as string;
+
+  if (!name || !email) {
+    throw new Error("Nome e Email são obrigatórios");
+  }
+
+  try {
+    await bd
+      .update(user)
+      .set({
+        name,
+        email,
+        telefone,
+        endereco,
+      })
+      .where(eq(user.id, sessao.user.id));
+
+    revalidatePath("/painel/configuracoes");
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao atualizar perfil:", error);
+    return { success: false, error: "Falha ao salvar as informações do perfil." };
+  }
+}
+
+export async function alterarSenhaUsuario(formData: FormData) {
+  const currentPassword = formData.get("currentPassword") as string;
+  const newPassword = formData.get("newPassword") as string;
+
+  if (!currentPassword || !newPassword) {
+    return { success: false, error: "Preencha ambas as senhas." };
+  }
+
+  try {
+    const res = await auth.api.changePassword({
+      headers: await headers(),
+      body: {
+        newPassword,
+        currentPassword,
+        revokeOtherSessions: true,
+      },
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro ao alterar senha:", error);
+    return { success: false, error: error.message || "Senha atual incorreta ou erro interno." };
+  }
+}
