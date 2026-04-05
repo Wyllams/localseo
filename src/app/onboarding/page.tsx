@@ -298,7 +298,7 @@ export default function PaginaOnboarding() {
                   </p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {PLANOS.filter((p) => p.id !== "AGENCIA").map((plano) => (
+                  {PLANOS.map((plano) => (
                     <button
                       key={plano.id}
                       onClick={() => atualizarDados("plano", plano.id)}
