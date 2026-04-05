@@ -166,30 +166,32 @@ export default async function PaginaBlog() {
                 </div>
 
                 {/* Ações / Data */}
-                <div className="sm:text-right shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto h-full pt-2">
-                  <div className="text-xs text-muted-foreground flex flex-col sm:items-end">
+                <div className="sm:text-right shrink-0 flex flex-row sm:flex-col items-start sm:items-end justify-between w-full sm:w-auto h-full">
+                  <div className="text-xs text-muted-foreground flex flex-col items-start sm:items-end w-full sm:w-auto">
                     <span>{formatarData(artigo.criadoEm)}</span>
                     <span>{tempoRelativo(artigo.criadoEm)}</span>
                   </div>
                   
-                  <Link 
-                    href={`/blog/${artigo.slug}`} 
-                    target="_blank"
-                    className="mt-4 sm:mb-2 text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1.5 transition-colors"
-                  >
-                    Ler Artigo <Globe className="w-4 h-4" />
-                  </Link>
-
-                  <form action={excluirArtigo} className="mt-2 sm:mt-0">
-                    <input type="hidden" name="id" value={artigo.id} />
-                    <button 
-                      type="submit" 
-                      className="flex items-center gap-1.5 text-xs font-medium text-destructive/70 hover:text-destructive hover:bg-destructive/10 px-2 py-1.5 rounded-md transition-colors"
-                      title="Excluir Artigo"
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end gap-3 sm:gap-4 mt-auto pt-4">
+                    <Link 
+                      href={`/blog/${artigo.slug}`} 
+                      target="_blank"
+                      className="text-primary hover:text-primary/80 font-medium text-sm flex items-center gap-1.5 transition-colors"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> Excluir
-                    </button>
-                  </form>
+                      Ler Artigo <Globe className="w-4 h-4" />
+                    </Link>
+
+                    <form action={excluirArtigo}>
+                      <input type="hidden" name="id" value={artigo.id} />
+                      <button 
+                        type="submit" 
+                        className="flex items-center gap-1.5 text-xs font-medium text-destructive/70 hover:text-destructive hover:bg-destructive/10 px-2 py-1.5 -mr-2 rounded-md transition-colors"
+                        title="Excluir Artigo"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Excluir
+                      </button>
+                    </form>
+                  </div>
                 </div>
               </div>
             ))}
