@@ -46,10 +46,10 @@ export async function salvarConfiguracaoSite(formData: FormData) {
     estado: negocioUser.estado,
   });
 
-  // Se = não enviou imagem, a IA busca uma baseada no nicho
+  // Se não enviou imagem, a IA busca uma baseada no nicho
   if (!imagemDestaque || imagemDestaque.trim() === "") {
     const { buscarImagemUnsplash } = await import("@/lib/unsplash");
-    imagemDestaque = await buscarImagemUnsplash(`${nicho} ${servicos[0] || ""}`.trim());
+    imagemDestaque = await buscarImagemUnsplash(conteudo.termoImagem || "business");
   }
 
   // Salvar tudo no banco

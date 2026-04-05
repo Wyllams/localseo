@@ -20,6 +20,7 @@ interface ContextoSite {
 interface ConteudoGerado {
   headline: string;
   subtitulo: string;
+  termoImagem: string; // Termo em inglês focado para Unsplash
 }
 
 /**
@@ -56,12 +57,9 @@ TOM DE VOZ: ${tomDescricao[contexto.tomVoz]}
 REGRAS:
 1. A headline deve ter no MÁXIMO 60 caracteres, ser impactante e conter a cidade.
 2. O subtítulo deve ter entre 100 e 200 caracteres, explicar o que o negócio faz e reforçar o diferencial.
-3. Use linguagem brasileira natural (não de Portugal).
-4. Não use aspas no texto.
-5. Não use emojis.
-
-Responda EXATAMENTE no formato JSON abaixo, sem markdown, sem código, apenas o JSON puro:
-{"headline": "...", "subtitulo": "..."}`;
+3. Forneça o "termoImagem": 1 ou 2 palavras cruciais em INGLÊS que representem visualmente o nicho para busca numa galeria de fotos (Unsplash). Ex: se For barbearia: "barbershop", clinica: "doctor clinic", software: "technology code", hamburgueria: "burger".
+4. Responda EXATAMENTE no formato JSON abaixo, sem markdown, sem código, apenas o JSON puro:
+{"headline": "...", "subtitulo": "...", "termoImagem": "..."}`;
 
   try {
     const resposta = await fetch(
@@ -98,6 +96,7 @@ Responda EXATAMENTE no formato JSON abaixo, sem markdown, sem código, apenas o 
         return {
           headline: parsed.headline.substring(0, 500),
           subtitulo: parsed.subtitulo.substring(0, 2000),
+          termoImagem: parsed.termoImagem ? parsed.termoImagem.substring(0, 50) : "business",
         };
       }
     }
@@ -120,5 +119,6 @@ function gerarFallback(contexto: ContextoSite): ConteudoGerado {
   return {
     headline: `${contexto.nomeNegocio} — Referência em ${contexto.cidade}`,
     subtitulo: `Especialistas em ${servicosPrincipais}. ${contexto.diferencial}. Atendemos em ${contexto.cidade}${contexto.estado ? ` - ${contexto.estado}` : ""} com excelência e dedicação total.`,
+    termoImagem: "business office",
   };
 }
