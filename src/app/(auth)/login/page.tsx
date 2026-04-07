@@ -153,7 +153,7 @@ function LoginForm() {
             <label className="block text-sm font-medium text-muted-foreground mb-1 mt-2"> Email </label>
             <input
               id="email" type="email" required
-              placeholder="exemplo@gmail.com"
+              placeholder=""
               className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground transition-all"
             />
           </div>
@@ -161,7 +161,7 @@ function LoginForm() {
             <label className="block text-sm font-medium text-muted-foreground mb-1 mt-2"> Senha </label>
             <input
               id="senha" type="password" required
-              placeholder="12345678"
+              placeholder=""
               className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground transition-all"
             />
           </div>
@@ -170,15 +170,12 @@ function LoginForm() {
             disabled={carregando}
             className="w-full py-3 mt-4 rounded-xl gradient-primary text-white font-medium hover:shadow-lg transition-all duration-200"
           >
-            {carregando ? "Autenticando..." : "Testar Login Rápido (Email)"}
+            {carregando ? "Autenticando..." : "Login"}
           </button>
         </form>
       </div>
 
-      {/* Termos */}
-      <p className="mt-8 text-center text-xs text-muted-foreground leading-relaxed">
-        Você pode usar senhas genéricas (ex: 12345678) apenas para pular o Setup local do Google OAuth.
-      </p>
+
     </>
   );
 }
