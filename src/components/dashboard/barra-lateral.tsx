@@ -14,6 +14,11 @@ import {
   CreditCard,
   ChevronLeft,
   MapPin,
+  Search,
+  Target,
+  ShieldCheck,
+  UserCircle,
+  TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -25,7 +30,7 @@ interface PropsBarraLateral {
   };
 }
 
-/** Itens do menu lateral */
+/** Itens do menu lateral — v2 com novas seções SEO */
 const ITENS_MENU = [
   {
     rotulo: "Visão Geral",
@@ -34,16 +39,23 @@ const ITENS_MENU = [
     grupo: "PRINCIPAL",
   },
   {
+    rotulo: "Perfil GMB",
+    href: "/painel/perfil-gmb",
+    icone: UserCircle,
+    grupo: "GOOGLE MEU NEGÓCIO",
+    badge: "Novo",
+  },
+  {
     rotulo: "Avaliações",
     href: "/painel/avaliacoes",
     icone: Star,
-    grupo: "PRINCIPAL",
+    grupo: "GOOGLE MEU NEGÓCIO",
   },
   {
     rotulo: "Postagens GMB",
     href: "/painel/postagens",
     icone: PenSquare,
-    grupo: "PRINCIPAL",
+    grupo: "GOOGLE MEU NEGÓCIO",
   },
   {
     rotulo: "Blog SEO",
@@ -52,16 +64,44 @@ const ITENS_MENU = [
     grupo: "CONTEÚDO",
   },
   {
-    rotulo: "Meu Site",
+    rotulo: "Landing Pages",
     href: "/painel/site",
     icone: Globe,
     grupo: "CONTEÚDO",
   },
   {
+    rotulo: "Palavras-chave",
+    href: "/painel/palavras-chave",
+    icone: Search,
+    grupo: "SEO & ANÁLISE",
+    badge: "Novo",
+  },
+  {
+    rotulo: "Ranking",
+    href: "/painel/ranking",
+    icone: TrendingUp,
+    grupo: "SEO & ANÁLISE",
+    badge: "Novo",
+  },
+  {
+    rotulo: "Analytics",
+    href: "/painel/analytics",
+    icone: BarChart3,
+    grupo: "SEO & ANÁLISE",
+    badge: "Novo",
+  },
+  {
+    rotulo: "NAP Check",
+    href: "/painel/nap",
+    icone: ShieldCheck,
+    grupo: "SEO & ANÁLISE",
+    badge: "Novo",
+  },
+  {
     rotulo: "Relatórios",
     href: "/painel/relatorios",
-    icone: BarChart3,
-    grupo: "ANÁLISE",
+    icone: Target,
+    grupo: "SEO & ANÁLISE",
   },
   {
     rotulo: "Configurações",
@@ -78,8 +118,9 @@ const ITENS_MENU = [
 ];
 
 /**
- * Barra lateral (Sidebar) do dashboard.
+ * Barra lateral (Sidebar) do dashboard — v2.
  * Responsiva: oculta no mobile, fixa no desktop.
+ * Inclui novos links para features de SEO local.
  */
 export function BarraLateral({ usuario }: PropsBarraLateral) {
   const caminhoAtual = usePathname();
@@ -126,7 +167,7 @@ export function BarraLateral({ usuario }: PropsBarraLateral) {
         )}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-6 border-b border-border">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-border shrink-0">
           <Link href="/painel" className="flex items-center gap-2.5">
             <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
               <MapPin className="w-4.5 h-4.5 text-white" />
@@ -145,11 +186,11 @@ export function BarraLateral({ usuario }: PropsBarraLateral) {
         {/* Menu */}
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           {Object.entries(grupos).map(([grupo, itens]) => (
-            <div key={grupo} className="mb-6">
-              <p className="px-3 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div key={grupo} className="mb-5">
+              <p className="px-3 mb-2 text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest">
                 {grupo}
               </p>
-              <ul className="space-y-1">
+              <ul className="space-y-0.5">
                 {itens.map((item) => {
                   const ativo =
                     item.href === "/painel"
@@ -162,7 +203,7 @@ export function BarraLateral({ usuario }: PropsBarraLateral) {
                         href={item.href}
                         onClick={() => setAberta(false)}
                         className={cn(
-                          "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium",
+                          "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium",
                           "transition-all duration-200",
                           ativo
                             ? "bg-primary/10 text-primary border border-primary/20"
@@ -171,11 +212,16 @@ export function BarraLateral({ usuario }: PropsBarraLateral) {
                       >
                         <item.icone
                           className={cn(
-                            "w-4.5 h-4.5 flex-shrink-0",
+                            "w-4 h-4 flex-shrink-0",
                             ativo ? "text-primary" : ""
                           )}
                         />
-                        {item.rotulo}
+                        <span className="flex-1">{item.rotulo}</span>
+                        {"badge" in item && item.badge && (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/20">
+                            {item.badge}
+                          </span>
+                        )}
                       </Link>
                     </li>
                   );
@@ -186,7 +232,7 @@ export function BarraLateral({ usuario }: PropsBarraLateral) {
         </nav>
 
         {/* Card do usuário */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border shrink-0">
           <div className="flex items-center gap-3 px-2">
             {usuario.image ? (
               <img

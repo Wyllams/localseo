@@ -5,7 +5,7 @@ import { bd } from "@/db";
 import { negocios, landingPages } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getAcessoPlano } from "@/lib/planos";
-import { Paywall } from "@/components/paywall";
+import { FeatureGate } from "@/components/feature-gate";
 import type { PlanoAssinatura } from "@/types";
 import { FormularioSite } from "./formulario-site";
 import { toggleLandingPage, excluirLandingPage } from "./actions";
@@ -45,15 +45,17 @@ export default async function PaginaLandingPages({
 
   // Verificar acesso pelo plano
   const acesso = getAcessoPlano(
-    (negocioUser.plano ?? "INICIAL") as PlanoAssinatura
+    (negocioUser.plano ?? "STARTER") as PlanoAssinatura
   );
   if (!acesso.siteLiberado) {
     return (
-      <Paywall
-        feature="Construtor de Landing Pages IA"
-        planoMinimo="Pro"
-        descricao="Crie Landing Pages ilimitadas geradas por Inteligência Artificial focadas em serviços específicos. Disponível a partir do plano Pro."
-      />
+      <FeatureGate
+        feature="siteLiberado"
+        liberado={false}
+        descricao="Crie um site profissional otimizado ou landing pages locais ilimitadas. Disponível a partir do plano Pro."
+      >
+        <div />
+      </FeatureGate>
     );
   }
 

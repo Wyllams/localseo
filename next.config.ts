@@ -1,17 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* ===== Configuração do LocalSEO ===== */
+  /* ===== Configuração do LocalSEO v2 ===== */
 
-  // Forçar variáveis de ambiente do servidor (bypassa dotenv-expand que engole o $ da chave Asaas)
-  env: {
-    ASAAS_API_KEY: process.env.ASAAS_API_KEY,
-    ASAAS_ENVIRONMENT: process.env.ASAAS_ENVIRONMENT || "sandbox",
-    ASAAS_WEBHOOK_TOKEN: process.env.ASAAS_WEBHOOK_TOKEN,
-  },
-
-
-  // Imagens externas permitidas (Unsplash + Supabase Storage)
+  // Imagens externas permitidas (Unsplash + Supabase Storage + Google)
   images: {
     remotePatterns: [
       {
@@ -20,7 +12,15 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "plus.unsplash.com",
+      },
+      {
+        protocol: "https",
         hostname: "sokskmuynndtjthuikgb.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },

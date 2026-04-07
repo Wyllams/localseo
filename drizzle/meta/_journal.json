@@ -29,6 +29,13 @@
       "when": 1775405336126,
       "tag": "0003_misty_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775502715033,
+      "tag": "0004_v2_schema_update",
+      "breakpoints": true
     }
   ]
 }

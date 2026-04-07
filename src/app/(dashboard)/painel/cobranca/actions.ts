@@ -15,7 +15,7 @@ import {
 } from "@/lib/asaas/cliente";
 
 export async function processarAssinaturaAction(
-  planoId: "INICIAL" | "PRO" | "PRO_PLUS" | "AGENCIA",
+  planoId: "STARTER" | "PRO" | "PRO_PLUS",
   valorMensal: number,
   dadosCartao: AsaasCartaoCredito,
   infoCliente: { nome: string; cpfCnpj: string; cep: string; numeroEnd: string }
@@ -69,7 +69,7 @@ export async function processarAssinaturaAction(
       .set({
         asaasClienteId: asaasCliente.id,
         asaasAssinaturaId: assinatura.id,
-        statusAssinatura: assinatura.status,
+        statusPlano: "ACTIVE",
         plano: planoId,
       })
       .where(eq(negocios.id, negocioDb.id));
@@ -87,7 +87,7 @@ export async function processarAssinaturaAction(
  * Cria cobrança avulsa e retorna QR Code + Payload (copia e cola).
  */
 export async function processarPixAction(
-  planoId: "INICIAL" | "PRO" | "PRO_PLUS" | "AGENCIA",
+  planoId: "STARTER" | "PRO" | "PRO_PLUS",
   valorMensal: number,
   infoCliente: { nome: string; cpfCnpj: string }
 ) {
@@ -131,7 +131,7 @@ export async function processarPixAction(
       .update(negocios)
       .set({
         asaasClienteId: asaasCliente.id,
-        statusAssinatura: "PENDING_PIX",
+        statusPlano: "ACTIVE",
       })
       .where(eq(negocios.id, negocioDb.id));
 

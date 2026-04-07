@@ -14,6 +14,9 @@ import {
   ArrowLeft,
   Sparkles,
   Check,
+  Search,
+  X,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,11 +30,13 @@ interface DadosOnboarding {
   website: string;
   descricao: string;
   plano: string;
+  palavrasChave: string[];
 }
 
 const ETAPAS = [
   { titulo: "Seu Negócio", icone: Building2 },
   { titulo: "Localização", icone: MapPin },
+  { titulo: "Palavras-chave", icone: Search },
   { titulo: "Escolha seu Plano", icone: CreditCard },
   { titulo: "Confirmação", icone: CheckCircle2 },
 ];
@@ -42,8 +47,8 @@ const ESTADOS_BR = [
 ];
 
 /**
- * Página de Onboarding — Formulário multi-step.
- * Guia o novo usuário pelo cadastro do negócio.
+ * Página de Onboarding — Formulário multi-step v2.
+ * Inclui nova etapa de Palavras-chave SEO.
  */
 export default function PaginaOnboarding() {
   const { data: sessao } = useSession();
@@ -58,11 +63,86 @@ export default function PaginaOnboarding() {
     telefone: "",
     website: "",
     descricao: "",
-    plano: "INICIAL",
+    plano: "STARTER",
+    palavrasChave: [],
   });
+
+  // Estado para input de palavra-chave
+  const [kwInput, setKwInput] = useState("");
+  const [sugestoes, setSugestoes] = useState<string[]>([]);
+  const [buscandoSugestoes, setBuscandoSugestoes] = useState(false);
 
   function atualizarDados(campo: keyof DadosOnboarding, valor: string) {
     setDados((prev) => ({ ...prev, [campo]: valor }));
+  }
+
+  function adicionarPalavraChave(kw: string) {
+    const normalizada = kw.trim().toLowerCase();
+    if (
+      normalizada.length >= 2 &&
+      !dados.palavrasChave.includes(normalizada) &&
+      dados.palavrasChave.length < 10
+    ) {
+      setDados((prev) => ({
+        ...prev,
+        palavrasChave: [...prev.palavrasChave, normalizada],
+      }));
+    }
+    setKwInput("");
+    setSugestoes([]);
+  }
+
+  function removerPalavraChave(kw: string) {
+    setDados((prev) => ({
+      ...prev,
+      palavrasChave: prev.palavrasChave.filter((p) => p !== kw),
+    }));
+  }
+
+  async function buscarSugestoes() {
+    if (!dados.nome || !dados.categoria) return;
+
+    setBuscandoSugestoes(true);
+    try {
+      const semente = dados.categoria
+        .toLowerCase()
+        .replace(/_/g, " ")
+        .replace("salao de beleza", "salão de beleza");
+
+      const queries = [
+        `${semente} ${dados.cidade}`,
+        `melhor ${semente} ${dados.cidade}`,
+        `${semente} perto de mim`,
+      ];
+
+      const todasSugestoes: string[] = [];
+
+      for (const q of queries) {
+        try {
+          const url = `https://suggestqueries.google.com/complete/search?client=firefox&hl=pt-BR&gl=br&q=${encodeURIComponent(q)}`;
+          const res = await fetch(url);
+          if (res.ok) {
+            const body = await res.json();
+            if (Array.isArray(body) && Array.isArray(body[1])) {
+              todasSugestoes.push(...(body[1] as string[]));
+            }
+          }
+        } catch {
+          // Silencia erros de CORS em dev
+        }
+      }
+
+      // Deduplica
+      const unicas = [...new Set(todasSugestoes)]
+        .filter((s) => s.length > 3 && !dados.palavrasChave.includes(s.toLowerCase()))
+        .slice(0, 8);
+
+      setSugestoes(unicas);
+    } catch (error) {
+      console.error("Erro ao buscar sugestões:", error);
+    } finally {
+      setBuscandoSugestoes(false);
+    }
   }
 
   function podeAvancar(): boolean {
@@ -72,6 +152,8 @@ export default function PaginaOnboarding() {
       case 1:
         return dados.cidade.trim().length >= 2;
       case 2:
+        return dados.palavrasChave.length >= 1;
+      case 3:
         return dados.plano !== "";
       default:
         return true;
@@ -148,7 +230,7 @@ export default function PaginaOnboarding() {
                 {i < ETAPAS.length - 1 && (
                   <div
                     className={cn(
-                      "w-8 lg:w-16 h-0.5 mx-3",
+                      "w-6 lg:w-12 h-0.5 mx-2",
                       i < etapaAtual ? "bg-primary" : "bg-border"
                     )}
                   />
@@ -288,8 +370,110 @@ export default function PaginaOnboarding() {
               </div>
             )}
 
-            {/* ===== ETAPA 2: Plano ===== */}
+            {/* ===== ETAPA 2: Palavras-chave ===== */}
             {etapaAtual === 2 && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold">Palavras-chave do seu negócio</h2>
+                  <p className="text-muted-foreground mt-1">
+                    Quais termos seus clientes buscam no Google? Adicione pelo menos 1.
+                  </p>
+                </div>
+
+                {/* Input manual */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ex: barbearia recife, corte fade..."
+                    value={kwInput}
+                    onChange={(e) => setKwInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        adicionarPalavraChave(kwInput);
+                      }
+                    }}
+                    className="flex-1 px-4 py-3 rounded-lg bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                  <button
+                    onClick={() => adicionarPalavraChave(kwInput)}
+                    disabled={kwInput.trim().length < 2}
+                    className="px-4 py-3 rounded-lg gradient-primary text-white font-medium text-sm disabled:opacity-30 transition-all hover:shadow-lg hover:shadow-primary/25"
+                  >
+                    Adicionar
+                  </button>
+                </div>
+
+                {/* Tags de palavras-chave */}
+                {dados.palavrasChave.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {dados.palavrasChave.map((kw) => (
+                      <span
+                        key={kw}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20"
+                      >
+                        <Search className="w-3 h-3" />
+                        {kw}
+                        <button
+                          onClick={() => removerPalavraChave(kw)}
+                          className="hover:text-destructive transition-colors"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Botão Sugestões IA */}
+                <div className="pt-2">
+                  <button
+                    onClick={buscarSugestoes}
+                    disabled={buscandoSugestoes || !dados.categoria}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-primary/40 text-primary text-sm font-medium hover:bg-primary/5 transition-all disabled:opacity-50"
+                  >
+                    {buscandoSugestoes ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Buscando sugestões...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Sugerir palavras-chave automaticamente
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Sugestões */}
+                {sugestoes.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      Sugestões do Google
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {sugestoes.map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => adicionarPalavraChave(s)}
+                          className="px-3 py-1.5 rounded-full border border-border text-sm text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
+                        >
+                          + {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-muted-foreground">
+                  {dados.palavrasChave.length}/10 palavras-chave adicionadas. Essas palavras serão usadas para gerar conteúdo, rastrear ranking e otimizar seu perfil.
+                </p>
+              </div>
+            )}
+
+            {/* ===== ETAPA 3: Plano ===== */}
+            {etapaAtual === 3 && (
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold">Escolha seu plano</h2>
@@ -340,8 +524,8 @@ export default function PaginaOnboarding() {
               </div>
             )}
 
-            {/* ===== ETAPA 3: Confirmação ===== */}
-            {etapaAtual === 3 && (
+            {/* ===== ETAPA 4: Confirmação ===== */}
+            {etapaAtual === 4 && (
               <div className="space-y-6">
                 <div className="text-center">
                   <div className="w-16 h-16 mx-auto gradient-primary rounded-2xl flex items-center justify-center mb-4">
@@ -367,6 +551,12 @@ export default function PaginaOnboarding() {
                     <span className="text-sm text-muted-foreground">Localização</span>
                     <span className="text-sm font-medium">
                       {dados.cidade}{dados.estado ? ` - ${dados.estado}` : ""}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Palavras-chave</span>
+                    <span className="text-sm font-medium text-primary">
+                      {dados.palavrasChave.length} selecionadas
                     </span>
                   </div>
                   <div className="flex justify-between">

@@ -31,8 +31,11 @@ export const postagens = pgTable("postagens", {
     .references(() => negocios.id, { onDelete: "cascade" }),
   conteudo: text("conteudo").notNull(),
   imagemUrl: varchar("imagem_url", { length: 500 }),
+  imagemAlt: varchar("imagem_alt", { length: 500 }),
+  palavraChave: varchar("palavra_chave", { length: 255 }), // Palavra-chave usada no post
   tipo: enumTipoPostagem("tipo").notNull().default("NOVIDADE"),
   status: enumStatusPostagem("status").notNull().default("RASCUNHO"),
+  gmbPostId: varchar("gmb_post_id", { length: 500 }), // ID retornado pela GMB API
   agendadoPara: timestamp("agendado_para", { withTimezone: true, mode: "date" }),
   publicadoEm: timestamp("publicado_em", { withTimezone: true, mode: "date" }),
   criadoEm: timestamp("criado_em", { withTimezone: true, mode: "date" })

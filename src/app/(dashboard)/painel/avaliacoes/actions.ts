@@ -9,20 +9,16 @@ import { eq } from "drizzle-orm";
 import { analisarEResponderAvaliacao } from "@/lib/agents/agente-avaliacoes";
 
 /**
- * Server Action que roda de forma segura no servidor.
- * Ela é disparada pelo Client Component da tabela e lida com banco + IA.
+ * Gera uma sugestão de resposta com IA (NÃO publica automaticamente).
+ * Retorna o texto sugerido para o usuário revisar e editar antes de publicar.
  */
 export async function gerarRespostaComIA(avaliacaoId: string) {
   try {
     const inicioExecucao = Date.now();
 
-    // 1. Check de segurança
-    const sessao = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const sessao = await auth.api.getSession({ headers: await headers() });
     if (!sessao?.user?.id) return { sucesso: false, erro: "Não autenticado." };
 
-    // 2. Buscar Avaliação e Negócio associado
     const avaliacaoDb = await bd.query.avaliacoes.findFirst({
       where: eq(avaliacoes.id, avaliacaoId),
     });
@@ -37,7 +33,6 @@ export async function gerarRespostaComIA(avaliacaoId: string) {
 
     if (!negocioDb) return { sucesso: false, erro: "Negócio não encontrado." };
 
-    // 3. Executar o Agente de IA para criar a resposta
     const resultadoIA = await analisarEResponderAvaliacao({
       nota: avaliacaoDb.nota,
       texto: avaliacaoDb.texto,
@@ -46,7 +41,7 @@ export async function gerarRespostaComIA(avaliacaoId: string) {
       categoriaNegocio: negocioDb.categoria,
     });
 
-    // 4. Salvar log de auditoria no Banco (execucoes_agente)
+    // Salvar log de execução
     await bd.insert(execucoesAgente).values({
       negocioId: negocioDb.id,
       tipo: "AVALIACOES",
@@ -55,23 +50,60 @@ export async function gerarRespostaComIA(avaliacaoId: string) {
       duracaoMs: Date.now() - inicioExecucao,
     });
 
-    // 5. Atualizar a avaliação no banco com os dados gerados
-    await bd.update(avaliacoes)
+    // Atualizar sentimento (mas NÃO marca como respondido ainda)
+    await bd
+      .update(avaliacoes)
+      .set({ sentimento: resultadoIA.sentimento })
+      .where(eq(avaliacoes.id, avaliacaoId));
+
+    revalidatePath("/painel/avaliacoes");
+
+    return {
+      sucesso: true,
+      resposta: resultadoIA.resposta_sugerida,
+      sentimento: resultadoIA.sentimento,
+    };
+  } catch (erro) {
+    console.error("Action error gerarRespostaComIA:", erro);
+    return { sucesso: false, erro: "Ocorreu um erro interno na IA." };
+  }
+}
+
+/**
+ * Publica a resposta (editada ou não) no banco.
+ * Futuramente, também postará via GMB API.
+ */
+export async function publicarResposta(avaliacaoId: string, textoResposta: string) {
+  try {
+    const sessao = await auth.api.getSession({ headers: await headers() });
+    if (!sessao?.user?.id) return { sucesso: false, erro: "Não autenticado." };
+
+    if (!textoResposta || textoResposta.trim().length < 5) {
+      return { sucesso: false, erro: "Resposta muito curta." };
+    }
+
+    const avaliacaoDb = await bd.query.avaliacoes.findFirst({
+      where: eq(avaliacoes.id, avaliacaoId),
+    });
+
+    if (!avaliacaoDb) return { sucesso: false, erro: "Avaliação não encontrada." };
+
+    // Salvar no banco
+    await bd
+      .update(avaliacoes)
       .set({
-        sentimento: resultadoIA.sentimento,
-        textoResposta: resultadoIA.resposta_sugerida,
+        textoResposta: textoResposta.trim(),
         respondido: true,
         respondidoEm: new Date(),
       })
       .where(eq(avaliacoes.id, avaliacaoId));
 
-    // 6. Forçar atualização da página
+    // TODO: Futuramente publicar via GMB API (replyToReview)
+
     revalidatePath("/painel/avaliacoes");
-
     return { sucesso: true };
-
   } catch (erro) {
-    console.error("Action error gerarRespostaComIA:", erro);
-    return { sucesso: false, erro: "Ocorreu um erro interno na IA." };
+    console.error("Action error publicarResposta:", erro);
+    return { sucesso: false, erro: "Erro ao salvar resposta." };
   }
 }

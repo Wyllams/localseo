@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
         // Extrair plano da description (PIX avulso): "LocalSEO - Upgrade para plano PRO"
         if (pagamento.description) {
           const desc = pagamento.description as string;
-          const planoMatch = desc.match(/plano\s+(INICIAL|PRO_PLUS|PRO|AGENCIA)/i);
+          const planoMatch = desc.match(/plano\s+(STARTER|PRO_PLUS|PRO)/i);
           if (planoMatch) {
             updateData.plano = planoMatch[1].toUpperCase();
             console.log(`[Webhook Asaas] Plano extraído da description: ${updateData.plano}`);
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
         break;
 
       case "PAYMENT_OVERDUE":
-        novoStatus = "OVERDUE";
+        novoStatus = "PAST_DUE";
         break;
 
       case "PAYMENT_DELETED":
@@ -109,9 +109,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Atualizar no banco
+    const updatePayload: Record<string, unknown> = { statusPlano: novoStatus, ...updateData };
     await bd
       .update(negocios)
-      .set({ statusAssinatura: novoStatus, ...updateData })
+      .set(updatePayload)
       .where(eq(negocios.id, negocioDb.id));
 
     console.log(

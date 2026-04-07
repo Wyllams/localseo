@@ -7,13 +7,16 @@ export function middleware(request: NextRequest) {
   const tokenSessao = request.cookies.get("better-auth.session_token")?.value;
 
   // 1. Extração do Subdomínio
-  // Ignoramos localhost:3000 ou domínios root em prod, tudo diferente vira subdomínio
   const isLocalhost = hostname.includes("localhost:") || hostname.includes("127.0.0.1:");
-  // Em prod alterar "seu-dominio.com.br" para o domínio final do SaaS
   const dominioPrincipal = isLocalhost ? "localhost:3000" : "localseo.com.br";
-  
-  let subdominio = null;
-  if (hostname !== dominioPrincipal) {
+
+  let subdominio: string | null = null;
+
+  // Suporte a ?subdomain= para testes locais (sem precisar de subdomínio real)
+  const subdomainParam = url.searchParams.get("subdomain");
+  if (subdomainParam && isLocalhost) {
+    subdominio = subdomainParam;
+  } else if (hostname !== dominioPrincipal) {
     if (isLocalhost) {
       subdominio = hostname.replace(".localhost:3000", "");
     } else {
@@ -21,12 +24,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 2. Proteção de Rotas Normais do Painel SaaS
+  // 2. Proteção de Rotas do Painel SaaS
   const pathname = url.pathname;
   const ehRotaProtegida = pathname.startsWith("/painel");
   const ehRotaAuth = pathname.startsWith("/login") || pathname.startsWith("/cadastro");
 
-  // Apenas protegemos as rotas se NAO for uma busca de site (para os sites serem 100% publicos)
   if (!subdominio) {
     if (ehRotaProtegida && !tokenSessao) {
       const urlLogin = new URL("/login", request.url);
@@ -39,17 +41,18 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 3. Rewrite Silencioso de Subdomínios (Vercel Edge)
+  // 3. Rewrite Silencioso de Subdomínios
   // barbearia.localseo.com.br/contato -> /site/barbearia/contato
+  // localhost:3000?subdomain=barbearia -> /site/barbearia (em dev)
   if (subdominio && subdominio !== hostname) {
-    return NextResponse.rewrite(new URL(`/site/${subdominio}${pathname === "/" ? "" : pathname}`, request.url));
+    const targetPath = `/site/${subdominio}${pathname === "/" ? "" : pathname}`;
+    return NextResponse.rewrite(new URL(targetPath, request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  // Roda em todas as rotas (necessário para subdomínios) bloqueando apenas os assets pesados
   matcher: [
     "/((?!api/|_next/static|_next/image|favicon.ico|.*\\..*).*)",
   ],

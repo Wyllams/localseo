@@ -1,171 +1,154 @@
-import { Megaphone, CalendarCheck, Image as ImageIcon, Box } from "lucide-react";
+import {
+  Megaphone,
+  CalendarDays,
+  Image as ImageIcon,
+  Box,
+  Trash2,
+  Tag,
+  Gift,
+  FileText,
+  Eye,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { bd } from "@/db";
 import { negocios, postagens } from "@/db/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { formatarData, tempoRelativo } from "@/lib/utils";
-import { revalidatePath } from "next/cache";
-import { Trash2 } from "lucide-react";
 import { CriadorPostagem } from "./criador-postagem";
+import { ListaPostagens } from "./lista-postagens";
+import { cn } from "@/lib/utils";
 
 export default async function PaginaPostagens() {
-  const sessao = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!sessao?.user?.id) {
-    redirect("/login");
-  }
+  const sessao = await auth.api.getSession({ headers: await headers() });
+  if (!sessao?.user?.id) redirect("/login");
 
   const negocioUser = await bd.query.negocios.findFirst({
     where: eq(negocios.donoId, sessao.user.id),
   });
+  if (!negocioUser) redirect("/onboarding");
 
-  if (!negocioUser) {
-    redirect("/onboarding");
-  }
-
-  // Buscar postagens do banco
+  // Buscar postagens
   const listaPostagens = await bd.query.postagens.findMany({
     where: eq(postagens.negocioId, negocioUser.id),
     orderBy: [desc(postagens.criadoEm)],
   });
 
-  const publicadas = listaPostagens.filter((p: any) => p.status === "PUBLICADO").length;
-  const agendadas = listaPostagens.filter((p: any) => p.status === "AGENDADO").length;
+  // Métricas
+  const total = listaPostagens.length;
+  const publicadas = listaPostagens.filter((p) => p.status === "PUBLICADO").length;
+  const rascunhos = listaPostagens.filter((p) => p.status === "RASCUNHO").length;
+  const agendadas = listaPostagens.filter((p) => p.status === "AGENDADO").length;
+  const comImagem = listaPostagens.filter((p) => p.imagemUrl).length;
 
-  async function excluirPostagem(formDados: FormData) {
-    "use server";
-    const id = formDados.get("id") as string;
-    if (!id) return;
-    
-    // Segurança: Garantir que a postagem pertence ao negócio do usuário atual
-    if (!negocioUser) return;
-    
-    await bd.delete(postagens).where(
-      and(
-        eq(postagens.id, id),
-        eq(postagens.negocioId, negocioUser.id)
-      )
-    );
-    
-    revalidatePath("/painel/postagens");
-  }
+  // Posts por tipo
+  const porTipo = {
+    NOVIDADE: listaPostagens.filter((p) => p.tipo === "NOVIDADE").length,
+    OFERTA: listaPostagens.filter((p) => p.tipo === "OFERTA").length,
+    EVENTO: listaPostagens.filter((p) => p.tipo === "EVENTO").length,
+  };
+
+  // Este mês
+  const agora = new Date();
+  const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+  const esteMes = listaPostagens.filter(
+    (p) => new Date(p.criadoEm) >= inicioMes
+  ).length;
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Postagens GMB</h1>
-          <p className="text-muted-foreground mt-1">
-            Gere conteúdo atrativo para o seu perfil do Google Meu Negócio usando IA.
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+          Postagens GMB
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Crie e gerencie posts otimizados para o Google Meu Negócio com
+          Inteligência Artificial.
+        </p>
+      </div>
+
+      {/* Métricas */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="glass-card p-5 border border-border">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Publicados
+            </span>
+            <Megaphone className="w-4 h-4 text-sucesso" />
+          </div>
+          <p className="text-3xl font-bold text-sucesso">{publicadas}</p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            {esteMes} este mês
           </p>
+        </div>
+
+        <div className="glass-card p-5 border border-border">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Rascunhos
+            </span>
+            <FileText className="w-4 h-4 text-amber-500" />
+          </div>
+          <p className="text-3xl font-bold">{rascunhos}</p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            aguardando revisão
+          </p>
+        </div>
+
+        <div className="glass-card p-5 border border-border">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Com Imagem
+            </span>
+            <ImageIcon className="w-4 h-4 text-primary" />
+          </div>
+          <p className="text-3xl font-bold">{comImagem}</p>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            {total > 0
+              ? `${Math.round((comImagem / total) * 100)}% do total`
+              : "nenhum post"}
+          </p>
+        </div>
+
+        <div className="glass-card p-5 border border-border">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Por Tipo
+            </span>
+            <Tag className="w-4 h-4 text-muted-foreground" />
+          </div>
+          <div className="flex items-center gap-3 mt-1">
+            <div className="flex items-center gap-1 text-xs">
+              <Megaphone className="w-3 h-3 text-primary" />
+              <span className="font-bold">{porTipo.NOVIDADE}</span>
+            </div>
+            <div className="flex items-center gap-1 text-xs">
+              <Gift className="w-3 h-3 text-sucesso" />
+              <span className="font-bold">{porTipo.OFERTA}</span>
+            </div>
+            <div className="flex items-center gap-1 text-xs">
+              <CalendarDays className="w-3 h-3 text-amber-500" />
+              <span className="font-bold">{porTipo.EVENTO}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Hero e Criador */}
+      {/* Criador + Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Coluna: Criador */}
         <div className="lg:col-span-1">
           <CriadorPostagem />
         </div>
-        
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="glass-card p-6 flex flex-col justify-center">
-            <div className="flex items-center gap-3 text-muted-foreground mb-4">
-              <Megaphone className="w-5 h-5 text-sucesso" />
-              <span className="font-medium text-sm">Postagens Ativas</span>
-            </div>
-            <p className="text-3xl font-bold text-sucesso">{publicadas}</p>
-            <p className="text-xs text-muted-foreground mt-2">Visíveis no seu perfil Google agora.</p>
-          </div>
-          
-          <div className="glass-card p-6 flex flex-col justify-center border-dashed border-primary/40 text-center relative overflow-hidden group">
-            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <CalendarCheck className="w-8 h-8 text-primary mx-auto mb-3 opacity-80" />
-            <h3 className="font-semibold text-lg text-foreground">Postagens Agendadas ({agendadas})</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              O agendador automático será liberado na versão final.
-            </p>
-          </div>
+
+        {/* Coluna: Lista de posts */}
+        <div className="lg:col-span-2">
+          <ListaPostagens postagens={listaPostagens} />
         </div>
-      </div>
-
-      {/* Histórico / Feed de Postagens */}
-      <div className="glass-card rounded-xl border border-border p-6">
-        <h2 className="text-lg font-semibold mb-6">Histórico de Conteúdo</h2>
-
-        {listaPostagens.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center border-t border-border mt-4">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Box className="w-8 h-8 text-muted-foreground opacity-50" />
-            </div>
-            <p className="text-muted-foreground font-medium">Nenhum post criado ainda</p>
-            <p className="text-sm text-muted-foreground/60 mt-1">Gere sua primeira postagem usando a IA acima.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-4">
-            {listaPostagens.map((post: any) => (
-              <div key={post.id} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col h-full group">
-                {/* Imagem Cover */}
-                <div className="h-40 bg-muted relative w-full overflow-hidden flex items-center justify-center">
-                  {post.imagemUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img 
-                      src={post.imagemUrl} 
-                      alt="Imagem do Post" 
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
-                  )}
-                  {/* Badge Tipo overlay */}
-                  <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-md px-2 py-1 rounded text-[10px] font-bold text-foreground">
-                    {post.tipo}
-                  </div>
-                </div>
-                
-                {/* Corpo */}
-                <div className="p-4 flex-1 flex flex-col">
-                  {/* Badge Status */}
-                  <div className="mb-3">
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold tracking-wider ${
-                      post.status === "PUBLICADO" ? "bg-sucesso/10 text-sucesso" :
-                      post.status === "AGENDADO" ? "bg-alerta/10 text-alerta" :
-                      "bg-muted text-muted-foreground"
-                    }`}>
-                      {post.status}
-                    </span>
-                  </div>
-                  
-                  <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed pb-4 mb-auto">
-                    {/* Trunca texto grande no preview */}
-                    {post.conteudo.length > 200 ? post.conteudo.substring(0, 200) + "..." : post.conteudo}
-                  </p>
-                  
-                  <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <span>{formatarData(post.criadoEm)}</span>
-                      <span>• {tempoRelativo(post.criadoEm)}</span>
-                    </div>
-
-                    <form action={excluirPostagem} className="flex">
-                      <input type="hidden" name="id" value={post.id} />
-                      <button 
-                        type="submit" 
-                        className="p-1.5 -mr-1.5 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors flex items-center justify-center"
-                        title="Excluir Postagem"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );

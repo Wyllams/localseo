@@ -15,6 +15,10 @@ export const enumTipoAgente = pgEnum("tipo_agente", [
   "AVALIACOES",
   "BLOG",
   "SITE",
+  "GMB_PERFIL",
+  "RANK_TRACKER",
+  "RELATORIO",
+  "NAP_CHECK",
 ]);
 
 export const enumStatusExecucao = pgEnum("status_execucao", [

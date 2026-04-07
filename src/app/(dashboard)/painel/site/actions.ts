@@ -87,6 +87,9 @@ export async function salvarConfiguracaoSite(formData: FormData) {
     tomVoz,
     whatsapp,
     imagemDestaque,
+    metaTitle: conteudo.metaTitle,
+    metaDescription: conteudo.metaDescription,
+    faq: conteudo.faq,
     ativo: true,
   });
 

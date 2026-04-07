@@ -1,0 +1,141 @@
+
+
+
+LOCAL SEO
+AI AGENT
+Plano Completo e Definitivo de Desenvolvimento
+SEO Orgânico Local para Pequenas e Médias Empresas
+
+
+Documento criado para ser lido pelo Google Antigravity (Gemini + Claude).
+A IA deve executar cada fase em ordem, arquivo por arquivo, sem pular etapas.
+
+0. O Que Mudou — Comparativo com Versão Anterior
+Esta versão é uma revisão completa focada exclusivamente em SEO orgânico local. Leia esta seção antes de começar para entender as decisões de produto.
+
+0.1 O que foi REMOVIDO e por quê
+
+0.2 O que foi MANTIDO e melhorado
+
+0.3 O que foi ADICIONADO (era crítico, não existia)
+
+1. Visão Completa do Produto
+O Local SEO AI Agent é um SaaS que ajuda pequenas e médias empresas locais a aparecerem nas primeiras posições do Google — de forma orgânica, sem pagar por tráfego pago. O empresário conecta o negócio uma vez e o agente de IA trabalha 24 horas por dia para melhorar a presença digital.
+
+1.1 O Problema Central
+90% das pequenas empresas locais não aparecem na primeira página do Google
+Elas não têm equipe ou tempo para fazer SEO e marketing de conteúdo
+Tráfego pago (Google Ads) é caro e para quando o dinheiro acaba
+Perfil do Google Meu Negócio incompleto, sem posts, sem respostas de reviews
+Concorrentes mais organizados aparecem antes no Maps e na busca orgânica
+
+1.2 A Solução — 4 Pilares do SEO Orgânico
+
+1.3 Como o Agente IA Funciona
+
+1.4 Planos e Preços
+
+2. Stack Técnica Completa
+2.1 Tecnologias Principais
+
+2.2 Decisão sobre DataForSEO — Alternativa Gratuita
+
+2.3 Dependências npm a Instalar
+
+3. Todas as Variáveis de Ambiente
+Crie o arquivo .env.local na raiz do projeto com TODAS as variáveis abaixo. NUNCA envie este arquivo para o GitHub — ele já deve estar no .gitignore.
+
+
+3.1 Onde Obter Cada Chave — Guia Rápido
+
+4. Estrutura Completa de Pastas e Arquivos
+Esta é a estrutura final do projeto. O Google Antigravity deve criar todos os arquivos listados, um por vez, começando pelos marcados como FASE 0.
+
+
+5. Schema Completo do Banco de Dados (Prisma)
+Este é o schema definitivo. O Google Antigravity deve criar exatamente este arquivo em prisma/schema.prisma e rodar as migrations.
+
+
+FASE 0 — Setup Inicial do Projeto
+
+Etapa 0.1 — Criar projeto Next.js
+
+Etapa 0.2 — Arquivos de configuração base
+
+FASE 1 — Autenticação, Onboarding e Subdomínio
+
+Etapa 1.1 — Middleware de Subdomínio e Autenticação
+
+Etapa 1.2 — Página de Login
+
+Etapa 1.3 — Onboarding do Negócio
+
+Etapa 1.4 — Layout do Dashboard e Sidebar
+
+FASE 2 — Agente de Reviews e Reputação
+
+Etapa 2.1 — Cliente da Google My Business API
+
+Etapa 2.2 — Agente de Reviews
+
+Etapa 2.3 — Tela de Reviews no Dashboard
+
+FASE 3 — Agente de Posts no Google Meu Negócio
+
+Etapa 3.1 — Cliente de Imagens (Unsplash + Claude)
+
+Etapa 3.2 — Agente de Posts GMB
+
+Etapa 3.3 — Tela de Posts no Dashboard
+
+FASE 4 — Completude e Otimização do Perfil GMB
+
+
+FASE 5 — Site, Subdomínio e SEO Técnico
+
+Etapa 5.1 — Schema Markup (JSON-LD)
+
+Etapa 5.2 — Landing Page do Negócio
+
+Etapa 5.3 — Sitemap e robots.txt
+
+FASE 6 — Blog SEO Local com Pesquisa de Palavras-chave
+
+Etapa 6.1 — Pesquisa de Palavras-chave Locais
+
+Etapa 6.2 — Agente de Blog (Geração de Artigos)
+
+Etapa 6.3 — Página do Artigo com Schema
+
+FASE 7 — NAP Consistency e Horários Especiais
+
+
+FASE 8 — Google Search Console e Rank Tracking
+
+Etapa 8.1 — Google Search Console API
+
+Etapa 8.2 — Rank Tracker
+
+Etapa 8.3 — Tela de Analytics
+
+FASE 9 — Dashboard Principal, Score e Relatórios
+
+Etapa 9.1 — Score de Presença Local
+
+Etapa 9.2 — Dashboard Principal
+
+Etapa 9.3 — Relatório Semanal por Email
+
+FASE 10 — Pagamentos e Planos (Stripe)
+
+
+Resumo Final — Ordem de Execução para o Google Antigravity
+Execute cada fase em ordem. Não pule etapas. Valide o resultado de cada fase antes de avançar.
+
+
+APIs Externas — Resumo Final
+
+
+
+Documento criado para execução 100% por IA — Google Antigravity
+Local SEO AI Agent — Plano Definitivo v2.0

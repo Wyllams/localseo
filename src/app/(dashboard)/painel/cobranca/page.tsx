@@ -23,8 +23,8 @@ export default async function PaginaCobranca() {
     where: eq(negocios.donoId, sessao.user.id),
   });
 
-  const planoAtual = negocioDb?.plano ?? "INICIAL";
-  const statusAssinatura = negocioDb?.statusAssinatura ?? null;
+  const planoAtual = negocioDb?.plano ?? "STARTER";
+  const statusAssinatura = negocioDb?.statusPlano ?? null;
 
   return (
     <CobrancaClient

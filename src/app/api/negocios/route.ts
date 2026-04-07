@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { bd } from "@/db";
-import { negocios } from "@/db/schema";
+import { negocios, palavrasChaveNegocio } from "@/db/schema";
 import { gerarSlug } from "@/lib/utils";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -24,6 +24,8 @@ const schemaCriarNegocio = z.object({
     "PET_SHOP",
     "LOJA",
     "SERVICOS",
+    "EDUCACAO",
+    "BELEZA_ESTETICA",
     "OUTRO",
   ]),
   cidade: z
@@ -34,7 +36,8 @@ const schemaCriarNegocio = z.object({
   telefone: z.string().max(20).optional().default(""),
   website: z.string().max(500).optional().default(""),
   descricao: z.string().max(1000).optional().default(""),
-  plano: z.enum(["INICIAL", "PRO", "PRO_PLUS", "AGENCIA"]).default("INICIAL"),
+  plano: z.enum(["STARTER", "PRO", "PRO_PLUS"]).default("STARTER"),
+  palavrasChave: z.array(z.string().min(2).max(200)).max(10).optional().default([]),
 });
 
 /**
@@ -74,7 +77,11 @@ export async function POST(request: NextRequest) {
     const slug = gerarSlug(dados.nome);
     const subdominio = slug;
 
-    // 4. Criar o negócio no banco
+    // 4. Calcular trial de 7 dias
+    const trialEnds = new Date();
+    trialEnds.setDate(trialEnds.getDate() + 7);
+
+    // 5. Criar o negócio no banco
     const [novoNegocio] = await bd
       .insert(negocios)
       .values({
@@ -89,8 +96,21 @@ export async function POST(request: NextRequest) {
         descricao: dados.descricao || null,
         plano: dados.plano,
         donoId: sessao.user.id,
+        statusPlano: "TRIAL",
+        trialEndsAt: trialEnds,
       })
       .returning();
+
+    // 6. Salvar palavras-chave do onboarding
+    if (dados.palavrasChave.length > 0) {
+      await bd.insert(palavrasChaveNegocio).values(
+        dados.palavrasChave.map((kw) => ({
+          negocioId: novoNegocio.id,
+          palavraChave: kw,
+          tipo: "PRIMARY" as const,
+        }))
+      );
+    }
 
     return NextResponse.json(
       {

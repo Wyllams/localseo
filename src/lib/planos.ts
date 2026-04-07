@@ -1,12 +1,13 @@
 /**
- * Controle de acesso por plano.
+ * Controle de acesso por plano — LocalSEO v2.
  *
  * Define os limites de cada funcionalidade por plano,
  * garantindo que features premium ficam travadas para quem não paga.
  *
- * @example
- *   const acesso = getAcessoPlano("INICIAL");
- *   if (!acesso.blogLiberado) { redirect("/painel/cobranca"); }
+ * Planos v2:
+ *   STARTER (R$97) → GMB básico (posts + reviews + perfil + score)
+ *   PRO (R$197) → + Site/Subdomínio + Blog SEO + Landing Pages + NAP
+ *   PRO_PLUS (R$297) → + Search Console + Rank Tracking + Analytics + Relatórios avançados
  */
 
 import { PlanoAssinatura } from "@/types";
@@ -20,51 +21,76 @@ export interface AcessoPlano {
   artigosMaxMes: number;
   /** Pode usar o construtor de site IA? */
   siteLiberado: boolean;
-  /** Pode ver monitor de concorrentes? */
-  monitorConcorrentes: boolean;
-  /** Pode ver relatório via WhatsApp? */
-  relatorioWhatsApp: boolean;
+  /** Pode criar/gerenciar landing pages? */
+  landingPagesLiberado: boolean;
+  /** Nº máximo de landing pages */
+  maxLandingPages: number;
+  /** Pode usar o verificador NAP? */
+  napLiberado: boolean;
+  /** Pode ver dados do Google Search Console? */
+  searchConsoleLiberado: boolean;
+  /** Pode ver Rank Tracking (posição no Google)? */
+  rankTrackingLiberado: boolean;
+  /** Pode acessar Analytics completo? */
+  analyticsLiberado: boolean;
+  /** Pode usar o pesquisador de palavras-chave IA? */
+  palavrasChaveLiberado: boolean;
+  /** Relatório semanal avançado por email? */
+  relatorioAvancado: boolean;
   /** Suporte prioritário? */
   suportePrioritario: boolean;
   /** Número máximo de negócios */
   maxNegocios: number;
-  /** White-label e API? */
-  whiteLabel: boolean;
 }
 
 const ACESSO_POR_PLANO: Record<PlanoAssinatura, AcessoPlano> = {
-  INICIAL: {
+  STARTER: {
     postsSemanais: 1,
     blogLiberado: false,
     artigosMaxMes: 0,
     siteLiberado: false,
-    monitorConcorrentes: false,
-    relatorioWhatsApp: false,
+    landingPagesLiberado: false,
+    maxLandingPages: 0,
+    napLiberado: false,
+    searchConsoleLiberado: false,
+    rankTrackingLiberado: false,
+    analyticsLiberado: false,
+    palavrasChaveLiberado: false,
+    relatorioAvancado: false,
     suportePrioritario: false,
     maxNegocios: 1,
-    whiteLabel: false,
   },
   PRO: {
     postsSemanais: 2,
     blogLiberado: true,
     artigosMaxMes: 4,
     siteLiberado: true,
-    monitorConcorrentes: true,
-    relatorioWhatsApp: false,
+    landingPagesLiberado: true,
+    maxLandingPages: 5,
+    napLiberado: true,
+    searchConsoleLiberado: false,
+    rankTrackingLiberado: false,
+    analyticsLiberado: false,
+    palavrasChaveLiberado: true,
+    relatorioAvancado: false,
     suportePrioritario: false,
     maxNegocios: 1,
-    whiteLabel: false,
   },
   PRO_PLUS: {
     postsSemanais: 4,
     blogLiberado: true,
     artigosMaxMes: Infinity,
     siteLiberado: true,
-    monitorConcorrentes: true,
-    relatorioWhatsApp: true,
+    landingPagesLiberado: true,
+    maxLandingPages: 20,
+    napLiberado: true,
+    searchConsoleLiberado: true,
+    rankTrackingLiberado: true,
+    analyticsLiberado: true,
+    palavrasChaveLiberado: true,
+    relatorioAvancado: true,
     suportePrioritario: true,
     maxNegocios: 1,
-    whiteLabel: false,
   },
 };
 
@@ -72,7 +98,7 @@ const ACESSO_POR_PLANO: Record<PlanoAssinatura, AcessoPlano> = {
  * Retorna as permissões de acesso de acordo com o plano.
  */
 export function getAcessoPlano(plano: PlanoAssinatura): AcessoPlano {
-  return ACESSO_POR_PLANO[plano] ?? ACESSO_POR_PLANO.INICIAL;
+  return ACESSO_POR_PLANO[plano] ?? ACESSO_POR_PLANO.STARTER;
 }
 
 /**
@@ -87,4 +113,37 @@ export function temAcesso(
   if (typeof val === "boolean") return val;
   if (typeof val === "number") return val > 0;
   return false;
+}
+
+/**
+ * Retorna o nome amigável do plano para exibição na UI.
+ */
+export function getNomePlano(plano: PlanoAssinatura): string {
+  const nomes: Record<PlanoAssinatura, string> = {
+    STARTER: "Starter",
+    PRO: "Pro",
+    PRO_PLUS: "Pro+",
+  };
+  return nomes[plano] ?? "Starter";
+}
+
+/**
+ * Retorna o preço mensal do plano.
+ */
+export function getPrecoPlano(plano: PlanoAssinatura): number {
+  const precos: Record<PlanoAssinatura, number> = {
+    STARTER: 97,
+    PRO: 197,
+    PRO_PLUS: 297,
+  };
+  return precos[plano] ?? 97;
+}
+
+/**
+ * Identifica o plano mínimo necessário para uma feature.
+ */
+export function planoMinimo(feature: keyof AcessoPlano): PlanoAssinatura {
+  if (temAcesso("STARTER", feature)) return "STARTER";
+  if (temAcesso("PRO", feature)) return "PRO";
+  return "PRO_PLUS";
 }

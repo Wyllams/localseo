@@ -24,6 +24,12 @@ export const landingPages = pgTable("landing_pages", {
   whatsapp: varchar("whatsapp", { length: 20 }),
   corPrimaria: varchar("cor_primaria", { length: 7 }),
   imagemDestaque: varchar("imagem_destaque", { length: 500 }),
+
+  // === SEO Técnico ===
+  metaTitle: varchar("meta_title", { length: 70 }),
+  metaDescription: varchar("meta_description", { length: 160 }),
+  faq: jsonb("faq").$type<{ pergunta: string; resposta: string }[]>(),
+
   ativo: boolean("ativo").notNull().default(true),
   criadoEm: timestamp("criado_em", { withTimezone: true, mode: "date" })
     .notNull()

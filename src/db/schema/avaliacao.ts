@@ -32,6 +32,7 @@ export const avaliacoes = pgTable("avaliacoes", {
   respondido: boolean("respondido").notNull().default(false),
   textoResposta: text("texto_resposta"),
   respondidoEm: timestamp("respondido_em", { withTimezone: true, mode: "date" }),
+  alertaEnviado: boolean("alerta_enviado").notNull().default(false), // Alerta de review negativo
   publicadoEm: timestamp("publicado_em", { withTimezone: true, mode: "date" })
     .notNull(),
   criadoEm: timestamp("criado_em", { withTimezone: true, mode: "date" })
