@@ -17,7 +17,7 @@ const config: Config = {
     },
     extend: {
       colors: {
-        /* ===== Design System LocalSEO ===== */
+        /* ===== Design System RikoSEO — Teal/Ciano ===== */
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -65,7 +65,7 @@ const config: Config = {
           foreground: "hsl(0, 0%, 100%)",
         },
         info: {
-          DEFAULT: "hsl(217, 91%, 60%)",
+          DEFAULT: "hsl(174, 72%, 50%)",
           foreground: "hsl(0, 0%, 100%)",
         },
       },
@@ -95,8 +95,8 @@ const config: Config = {
           to: { opacity: "1", transform: "translateX(0)" },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 5px hsl(217, 91%, 60%, 0.3)" },
-          "50%": { boxShadow: "0 0 20px hsl(217, 91%, 60%, 0.6)" },
+          "0%, 100%": { boxShadow: "0 0 5px hsl(174, 72%, 50%, 0.3)" },
+          "50%": { boxShadow: "0 0 20px hsl(174, 72%, 50%, 0.6)" },
         },
         "score-fill": {
           from: { strokeDashoffset: "283" },

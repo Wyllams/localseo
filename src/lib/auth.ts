@@ -14,7 +14,7 @@ export const auth = betterAuth({
   }),
 
   baseURL: process.env.BETTER_AUTH_URL || 
-           (process.env.NODE_ENV === "production" ? "https://localseo-omega.vercel.app" : "http://localhost:3000"),
+           (process.env.NODE_ENV === "production" ? "https://rikoseo.vercel.app" : "http://localhost:3000"),
 
   /* ===== Provedores Sociais ===== */
   socialProviders: {
@@ -50,7 +50,7 @@ export const auth = betterAuth({
   /* ===== URLs de Trust ===== */
   trustedOrigins: [
     "http://localhost:3000",
-    "https://localseo-omega.vercel.app",
+    "https://rikoseo.vercel.app",
   ],
 });
 

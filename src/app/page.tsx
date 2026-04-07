@@ -131,7 +131,7 @@ const PLANOS_LP = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#030712] text-white font-sans selection:bg-cyan-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#030712] text-white font-sans selection:bg-teal-500/30 overflow-x-hidden">
       {/* ===== HEADER ===== */}
       <header className="sticky top-0 z-50 border-b border-white/5 bg-[#030712]/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -150,7 +150,7 @@ export default function Home() {
             </Link>
             <Link
               href="/login"
-              className="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-105 transition-all duration-300"
+              className="rounded-full bg-gradient-to-r from-teal-500 to-cyan-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 hover:scale-105 transition-all duration-300"
             >
               Começar Grátis
             </Link>
@@ -163,27 +163,27 @@ export default function Home() {
         <section className="relative pt-20 pb-32 lg:pt-32 lg:pb-44">
           {/* Background effects */}
           <div className="absolute inset-0 -z-10">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-cyan-500/20 via-blue-600/10 to-transparent rounded-full blur-3xl" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-teal-500/20 via-cyan-600/10 to-transparent rounded-full blur-3xl" />
             <div className="absolute top-40 left-20 w-72 h-72 bg-purple-600/10 rounded-full blur-3xl" />
-            <div className="absolute top-60 right-20 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl" />
+            <div className="absolute top-60 right-20 w-96 h-96 bg-teal-600/10 rounded-full blur-3xl" />
           </div>
           {/* Grid pattern */}
           <div className="absolute inset-0 -z-10 bg-[linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
             {/* Badge */}
-            <div className="inline-flex items-center rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-1.5 text-sm font-medium text-cyan-400 mb-8 animate-pulse">
+            <div className="inline-flex items-center rounded-full border border-teal-500/20 bg-teal-500/10 px-4 py-1.5 text-sm font-medium text-teal-400 mb-8 animate-pulse">
               <Zap className="mr-2 h-4 w-4" />
               Plataforma de SEO Local com Inteligência Artificial
             </div>
 
             <h1 className="mx-auto max-w-5xl font-extrabold tracking-tight text-4xl sm:text-6xl lg:text-7xl mb-8 leading-[1.1]">
               Domine o{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-500 to-emerald-400">
                 Google Maps
               </span>{" "}
               da sua Cidade com{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-teal-400">
                 IA
               </span>
             </h1>
@@ -196,7 +196,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Link
                 href="/login"
-                className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:-translate-y-1 transition-all duration-300"
+                className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-cyan-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-teal-500/30 hover:shadow-teal-500/50 hover:-translate-y-1 transition-all duration-300"
               >
                 Testar Grátis por 7 Dias
                 <ArrowRight className="h-5 w-5" />
@@ -219,7 +219,7 @@ export default function Home() {
                 { valor: "Top 3", label: "Google Maps" },
               ].map((stat, i) => (
                 <div key={i} className="text-center">
-                  <p className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
+                  <p className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">
                     {stat.valor}
                   </p>
                   <p className="text-xs text-white/40 mt-1 uppercase tracking-wider">{stat.label}</p>
@@ -231,10 +231,10 @@ export default function Home() {
 
         {/* ===== PROBLEMA / POR QUE ===== */}
         <section id="como-funciona" className="py-24 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-950/20 to-transparent -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-teal-950/20 to-transparent -z-10" />
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-20">
-              <p className="text-cyan-400 font-semibold text-sm uppercase tracking-widest mb-4">O Problema</p>
+              <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest mb-4">O Problema</p>
               <h2 className="text-3xl sm:text-5xl font-bold tracking-tight mb-6">
                 Seus Clientes Estão Indo Para o Concorrente
               </h2>
@@ -266,13 +266,13 @@ export default function Home() {
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className="relative group rounded-2xl border border-white/5 bg-white/[0.02] p-8 hover:border-cyan-500/30 hover:bg-cyan-500/[0.03] transition-all duration-500"
+                  className="relative group rounded-2xl border border-white/5 bg-white/[0.02] p-8 hover:border-teal-500/30 hover:bg-teal-500/[0.03] transition-all duration-500"
                 >
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 flex items-center justify-center">
-                      <item.icone className="h-6 w-6 text-cyan-400" />
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500/20 to-cyan-600/20 flex items-center justify-center">
+                      <item.icone className="h-6 w-6 text-teal-400" />
                     </div>
-                    <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
+                    <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">
                       {item.stat}
                     </span>
                   </div>
@@ -293,7 +293,7 @@ export default function Home() {
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-20">
-              <p className="text-cyan-400 font-semibold text-sm uppercase tracking-widest mb-4">Funcionalidades</p>
+              <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest mb-4">Funcionalidades</p>
               <h2 className="text-3xl sm:text-5xl font-bold tracking-tight mb-6">
                 8 Agentes de IA Trabalhando Por Você
               </h2>
@@ -321,10 +321,10 @@ export default function Home() {
 
         {/* ===== COMO FUNCIONA ===== */}
         <section className="py-24 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-950/10 to-transparent -z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-teal-950/10 to-transparent -z-10" />
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-20">
-              <p className="text-cyan-400 font-semibold text-sm uppercase tracking-widest mb-4">Simples de Usar</p>
+              <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest mb-4">Simples de Usar</p>
               <h2 className="text-3xl sm:text-5xl font-bold tracking-tight mb-6">
                 Configure em 5 Minutos
               </h2>
@@ -338,8 +338,8 @@ export default function Home() {
                 { passo: "04", titulo: "Relaxe e Venda", desc: "A IA faz blog, posts, respostas e mais. Sozinha." },
               ].map((step, idx) => (
                 <div key={idx} className="text-center group">
-                  <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border border-cyan-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
+                  <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-teal-500/20 to-cyan-600/20 border border-teal-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">
                       {step.passo}
                     </span>
                   </div>
@@ -354,11 +354,11 @@ export default function Home() {
         {/* ===== PLANOS ===== */}
         <section id="planos" className="py-24 relative">
           <div className="absolute inset-0 -z-10">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] bg-blue-600/5 rounded-full blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] bg-teal-600/5 rounded-full blur-3xl" />
           </div>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <p className="text-cyan-400 font-semibold text-sm uppercase tracking-widest mb-4">Planos</p>
+              <p className="text-teal-400 font-semibold text-sm uppercase tracking-widest mb-4">Planos</p>
               <h2 className="text-3xl sm:text-5xl font-bold tracking-tight mb-6">
                 Invista Menos que um Almoço por Dia
               </h2>
@@ -373,13 +373,13 @@ export default function Home() {
                   key={idx}
                   className={`relative rounded-2xl p-8 transition-all duration-300 hover:-translate-y-2 ${
                     plano.destaque
-                      ? "bg-gradient-to-b from-cyan-500/10 to-blue-600/10 border-2 border-cyan-500/30 shadow-2xl shadow-cyan-500/10"
+                      ? "bg-gradient-to-b from-teal-500/10 to-cyan-600/10 border-2 border-teal-500/30 shadow-2xl shadow-teal-500/10"
                       : "bg-white/[0.02] border border-white/5 hover:border-white/10"
                   }`}
                 >
                   {plano.destaque && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-1 text-xs font-bold text-white shadow-lg">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-teal-500 to-cyan-600 px-4 py-1 text-xs font-bold text-white shadow-lg">
                         <Sparkles className="w-3 h-3" />
                         Mais Popular
                       </span>
@@ -395,7 +395,7 @@ export default function Home() {
                   <ul className="space-y-3 mb-8">
                     {plano.recursos.map((recurso, i) => (
                       <li key={i} className="flex items-start gap-2.5 text-sm text-white/60">
-                        <CheckCircle2 className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0 mt-0.5" />
                         {recurso}
                       </li>
                     ))}
@@ -404,7 +404,7 @@ export default function Home() {
                     href="/login"
                     className={`block w-full text-center py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
                       plano.destaque
-                        ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:scale-[1.02]"
+                        ? "bg-gradient-to-r from-teal-500 to-cyan-600 text-white shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 hover:scale-[1.02]"
                         : "bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white"
                     }`}
                   >
@@ -421,7 +421,7 @@ export default function Home() {
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <div className="relative rounded-3xl overflow-hidden">
               {/* Gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-600 via-blue-600 to-purple-700" />
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-600 via-cyan-600 to-emerald-700" />
               <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.05)_1px,transparent_1px)] bg-[size:32px_32px]" />
 
               <div className="relative z-10 px-8 py-16 sm:px-16 sm:py-24 text-center">
@@ -433,7 +433,7 @@ export default function Home() {
                 </p>
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-10 py-4 text-lg font-bold text-blue-600 shadow-2xl hover:scale-105 transition-all duration-300 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full bg-white px-10 py-4 text-lg font-bold text-teal-600 shadow-2xl hover:scale-105 transition-all duration-300 active:scale-95"
                 >
                   Ativar Minha IA Agora
                   <ArrowRight className="h-5 w-5" />

@@ -3,15 +3,37 @@
 import { useState, Suspense } from "react";
 import { signIn } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
-// Componente interno que usa os hooks de navegação
+type Modo = "login" | "cadastro";
+
+/**
+ * Componente interno que alterna entre Login e Cadastro na mesma página.
+ */
 function LoginForm() {
+  const [modo, setModo] = useState<Modo>("login");
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [sucesso, setSucesso] = useState<string | null>(null);
   const router = useRouter();
   const parametros = useSearchParams();
   const redirecionarPara = parametros.get("redirecionar") || "/painel";
 
+  /** Alterna para o modo cadastro */
+  function irParaCadastro() {
+    setErro(null);
+    setSucesso(null);
+    setModo("cadastro");
+  }
+
+  /** Volta para o modo login */
+  function irParaLogin() {
+    setErro(null);
+    setSucesso(null);
+    setModo("login");
+  }
+
+  /** Login com Google OAuth */
   async function entrarComGoogle() {
     try {
       setCarregando(true);
@@ -22,20 +44,213 @@ function LoginForm() {
         callbackURL: redirecionarPara,
       });
 
-      // Em vez de throw, o Better-Auth retorna a prop "error" se falhar
       if (res.error) {
         throw new Error(res.error.message || "Erro desconhecido ao conectar com o Google");
       }
-      
-      // Se não houver erro, a página será redirecionada pelo próprio Better-Auth
     } catch (err: any) {
       setErro(`Erro: ${err.message}`);
       setCarregando(false);
     }
   }
 
+  /** Login por email/senha */
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("senha") as string;
+
+    if (!email || !password) return setErro("Preencha todos os campos.");
+
+    try {
+      setCarregando(true);
+      setErro(null);
+
+      const resLogin = await signIn.email({ email, password });
+
+      if (resLogin.error) {
+        throw new Error("Email ou senha inválidos.");
+      }
+
+      window.location.href = redirecionarPara;
+    } catch (err: any) {
+      setErro(err.message || "Credenciais inválidas");
+      setCarregando(false);
+    }
+  }
+
+  /** Cadastro de nova conta */
+  async function handleCadastro(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const nome = (formData.get("nome") as string)?.trim();
+    const email = (formData.get("email") as string)?.trim();
+    const telefone = (formData.get("telefone") as string)?.trim();
+    const senha = formData.get("senha") as string;
+
+    if (!nome || !email || !telefone || !senha) {
+      return setErro("Preencha todos os campos.");
+    }
+
+    if (senha.length < 8) {
+      return setErro("A senha deve ter pelo menos 8 caracteres.");
+    }
+
+    try {
+      setCarregando(true);
+      setErro(null);
+
+      const { signUp } = await import("@/lib/auth-client");
+      const res = await signUp.email({
+        email,
+        password: senha,
+        name: nome,
+      });
+
+      if (res.error) throw new Error(res.error.message || "Erro ao criar conta");
+
+      // Sucesso — volta para login
+      setSucesso("Conta criada com sucesso! Faça login para continuar.");
+      setModo("login");
+      setCarregando(false);
+    } catch (err: any) {
+      setErro(err.message || "Erro ao criar conta");
+      setCarregando(false);
+    }
+  }
+
+  // ───────────── MODO CADASTRO ─────────────
+  if (modo === "cadastro") {
+    return (
+      <div key="cadastro" className="animate-fade-in">
+        {/* Logo mobile */}
+        <div className="lg:hidden mb-8 flex items-center gap-3">
+          <img src="/favicon.png" alt="RikoSEO" className="w-10 h-10 rounded-xl" />
+          <span className="text-xl font-bold">RikoSEO</span>
+        </div>
+
+        {/* Botão voltar */}
+        <button
+          onClick={irParaLogin}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar para login
+        </button>
+
+        {/* Cabeçalho */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold tracking-tight mb-2">
+            Criar sua conta
+          </h2>
+          <p className="text-muted-foreground">
+            Preencha os dados abaixo para começar
+          </p>
+        </div>
+
+        {/* Erro */}
+        {erro && (
+          <div className="mb-6 p-4 rounded-lg bg-perigo/10 border border-perigo/20 text-perigo text-sm">
+            {erro}
+          </div>
+        )}
+
+        {/* Formulário de cadastro */}
+        <form onSubmit={handleCadastro} className="space-y-4 text-left">
+          <div>
+            <label htmlFor="cad-nome" className="block text-sm font-medium text-muted-foreground mb-1">
+              Nome completo
+            </label>
+            <input
+              id="cad-nome"
+              name="nome"
+              type="text"
+              required
+              autoComplete="name"
+              className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground 
+                focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="cad-email" className="block text-sm font-medium text-muted-foreground mb-1">
+              Email
+            </label>
+            <input
+              id="cad-email"
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground 
+                focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="cad-telefone" className="block text-sm font-medium text-muted-foreground mb-1">
+              Telefone
+            </label>
+            <input
+              id="cad-telefone"
+              name="telefone"
+              type="tel"
+              required
+              autoComplete="tel"
+              placeholder="(00) 00000-0000"
+              className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground 
+                focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none
+                placeholder:text-muted-foreground/40"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="cad-senha" className="block text-sm font-medium text-muted-foreground mb-1">
+              Senha
+            </label>
+            <input
+              id="cad-senha"
+              name="senha"
+              type="password"
+              required
+              minLength={8}
+              autoComplete="new-password"
+              className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground 
+                focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none"
+            />
+            <p className="text-xs text-muted-foreground/60 mt-1">Mínimo 8 caracteres</p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={carregando}
+            className="w-full py-3 mt-2 rounded-xl gradient-primary text-white font-medium 
+              hover:shadow-lg hover:shadow-primary/25 transition-all duration-200
+              disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {carregando ? "Criando conta..." : "Criar conta"}
+          </button>
+        </form>
+
+        {/* Link para login */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            Já tem uma conta?{" "}
+            <button
+              onClick={irParaLogin}
+              className="text-primary font-medium hover:underline"
+            >
+              Fazer login
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ───────────── MODO LOGIN (padrão) ─────────────
   return (
-    <>
+    <div key="login" className="animate-fade-in">
       {/* Logo mobile */}
       <div className="lg:hidden mb-8 flex items-center gap-3">
         <img src="/favicon.png" alt="RikoSEO" className="w-10 h-10 rounded-xl" />
@@ -48,9 +263,16 @@ function LoginForm() {
           Bem-vindo de volta
         </h2>
         <p className="text-muted-foreground">
-          Entre com sua conta Google para continuar
+          Entre com sua conta para continuar
         </p>
       </div>
+
+      {/* Mensagem de sucesso (após cadastro) */}
+      {sucesso && (
+        <div className="mb-6 p-4 rounded-lg bg-sucesso/10 border border-sucesso/20 text-sucesso text-sm">
+          {sucesso}
+        </div>
+      )}
 
       {/* Erro */}
       {erro && (
@@ -106,87 +328,73 @@ function LoginForm() {
         <div className="flex-1 h-px bg-border" />
       </div>
 
-      {/* Campo de email (Para Dev e Testes Iniciais Rápido) */}
-      <div className="space-y-4 text-left">
-        <form onSubmit={async (e) => {
-          e.preventDefault();
-          const target = e.target as typeof e.target & {
-            email: { value: string };
-            senha: { value: string };
-          };
-          const email = target.email.value;
-          const password = target.senha.value;
-          
-          if (!email || !password) return setErro("Preencha todos os campos.");
+      {/* Formulário de login */}
+      <form onSubmit={handleLogin} className="space-y-4 text-left">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-muted-foreground mb-1">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground 
+              focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none"
+          />
+        </div>
+        <div>
+          <label htmlFor="senha" className="block text-sm font-medium text-muted-foreground mb-1">
+            Senha
+          </label>
+          <input
+            id="senha"
+            name="senha"
+            type="password"
+            required
+            autoComplete="current-password"
+            className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground 
+              focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all outline-none"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={carregando}
+          className="w-full py-3 mt-2 rounded-xl gradient-primary text-white font-medium 
+            hover:shadow-lg hover:shadow-primary/25 transition-all duration-200
+            disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {carregando ? "Autenticando..." : "Login"}
+        </button>
+      </form>
 
-          try {
-            setCarregando(true);
-            setErro(null);
-
-            // Tenta o Login
-            const resLogin = await signIn.email({
-              email: email,
-              password: password,
-            });
-
-            if (resLogin.error) {
-               // Tenta criar a conta automaticamente se der erro (UX rápida para MVP)
-               const { signUp } = await import('@/lib/auth-client');
-               const resCad = await signUp.email({
-                 email: email,
-                 password: password,
-                 name: email.split("@")[0]
-               });
-               
-               if (resCad.error) throw new Error(resCad.error.message || "Erro de Auth");
-            }
-            
-            // Sucesso! Encaminha para painel:
-            window.location.href = redirecionarPara;
-
-          } catch (err: any) {
-             setErro(err.message || "Credenciais inválidas");
-             setCarregando(false);
-          }
-        }}>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1 mt-2"> Email </label>
-            <input
-              id="email" type="email" required
-              placeholder=""
-              className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground transition-all"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-muted-foreground mb-1 mt-2"> Senha </label>
-            <input
-              id="senha" type="password" required
-              placeholder=""
-              className="w-full px-4 py-3 rounded-xl bg-muted/50 border border-border text-foreground transition-all"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={carregando}
-            className="w-full py-3 mt-4 rounded-xl gradient-primary text-white font-medium hover:shadow-lg transition-all duration-200"
-          >
-            {carregando ? "Autenticando..." : "Login"}
-          </button>
-        </form>
+      {/* Separador antes do cadastro */}
+      <div className="mt-8 pt-6 border-t border-border text-center">
+        <p className="text-sm text-muted-foreground mb-4">
+          Ainda não tem uma conta?
+        </p>
+        <button
+          onClick={irParaCadastro}
+          disabled={carregando}
+          className="w-full py-3 rounded-xl border-2 border-primary text-primary font-medium 
+            hover:bg-primary hover:text-primary-foreground
+            transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Criar conta
+        </button>
       </div>
-
-
-    </>
+    </div>
   );
 }
 
 /**
- * Página de Login — RikoSEO
- * Design premium com login via Google OAuth.
+ * Página de Login / Cadastro — RikoSEO
+ * Design premium com alternância entre login e cadastro na mesma tela.
  */
 export default function PaginaLogin() {
   return (
-    <div className="w-full max-w-md mx-auto animate-fade-in">
+    <div className="w-full max-w-md mx-auto">
       <Suspense fallback={<div className="flex justify-center p-8"><div className="w-6 h-6 border-2 border-gray-300 border-t-primary rounded-full animate-spin" /></div>}>
         <LoginForm />
       </Suspense>

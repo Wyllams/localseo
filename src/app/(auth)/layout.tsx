@@ -13,7 +13,7 @@ export default function LayoutAuth({
   return (
     <div className="min-h-screen flex">
       {/* ===== Painel Esquerdo - Branding ===== */}
-      <div className="hidden lg:flex lg:w-1/2 gradient-primary relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, hsl(174, 72%, 25%) 0%, hsl(180, 50%, 35%) 50%, hsl(174, 60%, 30%) 100%)' }}>
         {/* Padrão decorativo */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl" />
