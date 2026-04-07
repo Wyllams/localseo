@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "LocalSEO — Entrar",
+  title: "RikoSEO — Entrar",
   description: "Acesse sua conta e gerencie a presença digital do seu negócio.",
 };
 
@@ -25,28 +25,8 @@ export default function LayoutAuth({
         <div className="relative z-10 flex flex-col justify-center px-16 text-white">
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <svg
-                  className="w-7 h-7 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </div>
-              <span className="text-2xl font-bold tracking-tight">LocalSEO</span>
+              <img src="/favicon.png" alt="RikoSEO" className="w-12 h-12 rounded-xl" />
+              <span className="text-2xl font-bold tracking-tight">RikoSEO</span>
             </div>
             <h1 className="text-4xl font-bold leading-tight mb-4">
               Sua presença digital

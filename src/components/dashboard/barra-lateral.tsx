@@ -169,10 +169,8 @@ export function BarraLateral({ usuario }: PropsBarraLateral) {
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-border shrink-0">
           <Link href="/painel" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-              <MapPin className="w-4.5 h-4.5 text-white" />
-            </div>
-            <span className="font-bold text-lg tracking-tight">LocalSEO</span>
+            <img src="/favicon.png" alt="RikoSEO" className="w-8 h-8 rounded-lg" />
+            <span className="font-bold text-lg tracking-tight">RikoSEO</span>
           </Link>
           <button
             onClick={() => setAberta(false)}

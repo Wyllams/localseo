@@ -192,10 +192,8 @@ export default function PaginaOnboarding() {
       {/* Header */}
       <header className="h-16 border-b border-border flex items-center px-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-            <MapPin className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-bold text-lg">LocalSEO</span>
+          <img src="/favicon.png" alt="RikoSEO" className="w-8 h-8 rounded-lg" />
+          <span className="font-bold text-lg">RikoSEO</span>
         </div>
       </header>
 

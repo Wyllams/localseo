@@ -38,7 +38,7 @@ export const RelatorioSemanalEmail = ({
       <Preview>Seu relatório de SEO Local desta semana chegou! 🚀</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>🔥 Relatório Semanal LocalSEO</Heading>
+          <Heading style={h1}>🔥 Relatório Semanal RikoSEO</Heading>
           
           <Text style={text}>
             Olá, <strong>{nomeNegocio}</strong>! Aqui está o resumo do seu desempenho em buscas locais e atualizações do Google Meu Negócio nesta semana.
@@ -88,7 +88,7 @@ export const RelatorioSemanalEmail = ({
           </Section>
 
           <Text style={footer}>
-            Enviado automaticamente pelo seu Agente LocalSEO.<br />
+            Enviado automaticamente pelo seu Agente RikoSEO.<br />
             Para pausar alertas, acesse suas configurações no painel.
           </Text>
         </Container>

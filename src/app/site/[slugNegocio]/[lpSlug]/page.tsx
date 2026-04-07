@@ -386,7 +386,7 @@ export default async function LandingPageServico({ params }: PageProps) {
             <span className="text-white/50 font-medium text-sm">© {new Date().getFullYear()} {negocioDb.nome}. Todos os direitos reservados.</span>
           </div>
           <p className="text-sm text-white/30 font-medium flex items-center gap-1">
-            Plataforma powered by <span className="text-white/60 font-bold ml-1">LocalSEO AI</span>
+            Plataforma powered by <span className="text-white/60 font-bold ml-1">RikoSEO AI</span>
           </p>
         </div>
       </footer>

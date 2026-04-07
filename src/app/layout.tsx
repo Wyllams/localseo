@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LocalSEO — Presença Digital no Piloto Automático",
+  title: "RikoSEO — Presença Digital no Piloto Automático",
   description:
     "IA que responde avaliações, cria posts no Google, escreve artigos SEO e monitora sua presença local — tudo automaticamente para negócios locais.",
   keywords: [
@@ -13,13 +13,17 @@ export const metadata: Metadata = {
     "marketing local",
     "IA para negócios",
   ],
-  authors: [{ name: "LocalSEO" }],
+  authors: [{ name: "RikoSEO" }],
   openGraph: {
-    title: "LocalSEO — Presença Digital no Piloto Automático",
+    title: "RikoSEO — Presença Digital no Piloto Automático",
     description:
       "IA que gerencia sua presença no Google automaticamente. Avaliações, posts, blog SEO e muito mais.",
     type: "website",
     locale: "pt_BR",
+  },
+  icons: {
+    icon: "/favicon.png",
+    apple: "/icon.png",
   },
 };
 
@@ -31,6 +35,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <head>
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>

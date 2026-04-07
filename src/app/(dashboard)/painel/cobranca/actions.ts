@@ -51,7 +51,7 @@ export async function processarAssinaturaAction(
       value: valorMensal,
       nextDueDate: dueDateStr,
       cycle: "MONTHLY",
-      description: `Assinatura LocalSEO - Plano ${planoId}`,
+      description: `Assinatura RikoSEO - Plano ${planoId}`,
       creditCard: dadosCartao,
       creditCardHolderInfo: {
         name: infoCliente.nome,
@@ -120,7 +120,7 @@ export async function processarPixAction(
       customer: asaasCliente.id,
       value: valorMensal,
       dueDate: dueDateStr,
-      description: `LocalSEO - Upgrade para plano ${planoId}`,
+      description: `RikoSEO - Upgrade para plano ${planoId}`,
     });
 
     // 3. Obter QR Code

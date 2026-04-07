@@ -72,7 +72,7 @@ export async function GET(request: Request) {
 
       // Disparo Resend
       await resend.emails.send({
-        from: "LocalSEO Bot <bot@app.localseo.com.br>", // Precisará estar autenticado na sua conta Resend
+        from: "RikoSEO Bot <bot@app.rikoseo.com.br>", // Precisará estar autenticado na sua conta Resend
         to: emailDono,
         subject: "Seu Relatório de Performance Local (Esta Semana)",
         html: emailHtml,

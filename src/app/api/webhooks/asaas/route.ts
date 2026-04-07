@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
       case "PAYMENT_RECEIVED":
         novoStatus = "ACTIVE";
 
-        // Extrair plano da description (PIX avulso): "LocalSEO - Upgrade para plano PRO"
+        // Extrair plano da description (PIX avulso): "RikoSEO - Upgrade para plano PRO"
         if (pagamento.description) {
           const desc = pagamento.description as string;
           const planoMatch = desc.match(/plano\s+(STARTER|PRO_PLUS|PRO)/i);

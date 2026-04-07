@@ -190,7 +190,7 @@ async function extrairNAPDoWebsite(url: string, nomeNegocio: string): Promise<Fo
 
     const response = await fetch(url, {
       signal: controller.signal,
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; LocalSEO-NAP/1.0)" },
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; RikoSEO-NAP/1.0)" },
     });
     clearTimeout(timeout);
 

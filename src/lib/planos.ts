@@ -1,5 +1,5 @@
 /**
- * Controle de acesso por plano — LocalSEO v2.
+ * Controle de acesso por plano — RikoSEO v2.
  *
  * Define os limites de cada funcionalidade por plano,
  * garantindo que features premium ficam travadas para quem não paga.

@@ -301,7 +301,7 @@ export default async function PaginaLeituraBlog({ params }: PageProps) {
       <footer className="py-8 border-t border-white/10 bg-[#02050A]">
         <div className="container mx-auto px-6 max-w-4xl text-center">
           <p className="text-sm text-white/30">
-            © {new Date().getFullYear()} {dbArtigo.negocio.nome} · Powered by <span className="text-white/50 font-bold">LocalSEO AI</span>
+            © {new Date().getFullYear()} {dbArtigo.negocio.nome} · Powered by <span className="text-white/50 font-bold">RikoSEO AI</span>
           </p>
         </div>
       </footer>

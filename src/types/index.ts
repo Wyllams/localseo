@@ -1,5 +1,5 @@
 /**
- * Tipos globais do projeto LocalSEO v2.
+ * Tipos globais do projeto RikoSEO v2.
  * Centraliza todas as interfaces e types compartilhados.
  */
 

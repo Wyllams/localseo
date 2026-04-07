@@ -9,8 +9,8 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b border-neutral-200 dark:border-neutral-800/60 bg-white/80 dark:bg-[#09090b]/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
-            <MapPin className="h-6 w-6 text-blue-600 dark:text-blue-500" />
-            <span className="text-xl font-bold tracking-tight">LocalSEO</span>
+            <img src="/favicon.png" alt="RikoSEO" className="h-7 w-7 rounded-md" />
+            <span className="text-xl font-bold tracking-tight">RikoSEO</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm font-medium hover:text-blue-600 transition-colors">
@@ -100,7 +100,7 @@ export default function Home() {
                 {
                   icon: Zap,
                   title: "O Algoritmo Premia",
-                  desc: "O sistema do Maps ranqueia melhor empresas que têm fluxo constante de novas avaliações e respondem ativamente todas elas. A LocalSEO faz isso 100% via IA."
+                  desc: "O sistema do Maps ranqueia melhor empresas que têm fluxo constante de novas avaliações e respondem ativamente todas elas. A RikoSEO faz isso 100% via IA."
                 }
               ].map((item, idx) => (
                 <div key={idx} className="relative group rounded-3xl border border-neutral-200 dark:border-neutral-800/80 p-8 hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-blue-950/10 transition-all duration-300 bg-neutral-50 dark:bg-[#0d0d10]">
@@ -148,11 +148,11 @@ export default function Home() {
       <footer className="border-t border-neutral-200 dark:border-neutral-900 bg-white dark:bg-[#09090b] py-12">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 sm:flex-row sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-neutral-900 dark:text-white font-bold text-lg">
-            <MapPin className="h-5 w-5 text-blue-600" />
-            LocalSEO
+            <img src="/favicon.png" alt="RikoSEO" className="h-6 w-6 rounded-md" />
+            RikoSEO
           </div>
           <p className="text-sm text-neutral-500 dark:text-neutral-500">
-            © {new Date().getFullYear()} LocalSEO Platform. Todos os direitos reservados. Feito para negócios locais que querem dominar sua região.
+            © {new Date().getFullYear()} RikoSEO Platform. Todos os direitos reservados. Feito para negócios locais que querem dominar sua região.
           </p>
         </div>
       </footer>
