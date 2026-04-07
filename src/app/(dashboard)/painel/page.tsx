@@ -235,7 +235,7 @@ export default async function PaginaPainel() {
           <p className="text-[10px] text-muted-foreground">{dados.artigos.publicados} publicados</p>
         </Link>
 
-        <Link href="/painel/landing-pages" className="glass-card p-4 border border-border card-hover block">
+        <Link href="/painel/site" className="glass-card p-4 border border-border card-hover block">
           <div className="flex items-center gap-2 text-blue-500 mb-2">
             <Globe className="w-3.5 h-3.5" />
             <span className="text-[10px] font-semibold uppercase tracking-wider">Landing Pages</span>

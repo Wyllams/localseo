@@ -129,7 +129,7 @@ export async function salvarPostagem(opts: {
             opts.conteudo,
             opts.imagemUrl,
             "LEARN_MORE",
-            negocioDb.website || "https://local-seo-saas.vercel.app"
+            negocioDb.website || "https://rikoseo.vercel.app"
           );
           statusFinal = "PUBLICADO";
         }

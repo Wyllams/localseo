@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!negocio) return { title: "Não Encontrado" };
 
   const lp = negocio.landingPages[0];
-  const baseUrl = `https://${negocio.subdominio}.localseo.com.br`;
+  const baseUrl = `https://${negocio.subdominio}.rikoseo.com.br`;
 
   return gerarMetadataSeo({
     titulo:

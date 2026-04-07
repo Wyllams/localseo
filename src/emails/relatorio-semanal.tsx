@@ -22,7 +22,7 @@ interface RelatorioSemanalProps {
   dicaSemana: string;
 }
 
-const urlSaaS = process.env.NEXT_PUBLIC_APP_URL || "https://localseo.com.br";
+const urlSaaS = process.env.NEXT_PUBLIC_APP_URL || "https://rikoseo.com.br";
 
 export const RelatorioSemanalEmail = ({
   nomeNegocio = "Seu Negócio",

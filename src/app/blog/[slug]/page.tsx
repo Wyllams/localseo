@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return gerarMetadataSeo({
     titulo: `${dbArtigo.titulo} | ${dbArtigo.negocio.nome}`,
     descricao: dbArtigo.metaDescricao || `Leia o artigo completo sobre ${dbArtigo.palavraChave}.`,
-    url: `https://${dbArtigo.negocio.subdominio}.localseo.com.br/blog/${dbArtigo.slug}`,
+    url: `https://${dbArtigo.negocio.subdominio}.rikoseo.com.br/blog/${dbArtigo.slug}`,
     imagem: dbArtigo.imagemHero,
   });
 }
@@ -90,7 +90,7 @@ export default async function PaginaLeituraBlog({ params }: PageProps) {
     dateModified: dbArtigo.criadoEm.toISOString(),
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://${dbArtigo.negocio.subdominio}.localseo.com.br/blog/${dbArtigo.slug}`,
+      "@id": `https://${dbArtigo.negocio.subdominio}.rikoseo.com.br/blog/${dbArtigo.slug}`,
     },
     wordCount: dbArtigo.wordCount,
     keywords: [dbArtigo.palavraChave, ...(dbArtigo.palavrasChaveSecundarias || [])].filter(Boolean).join(", "),
@@ -117,8 +117,8 @@ export default async function PaginaLeituraBlog({ params }: PageProps) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: dbArtigo.negocio.nome, item: `https://${dbArtigo.negocio.subdominio}.localseo.com.br` },
-      { "@type": "ListItem", position: 2, name: "Blog", item: `https://${dbArtigo.negocio.subdominio}.localseo.com.br/blog` },
+      { "@type": "ListItem", position: 1, name: dbArtigo.negocio.nome, item: `https://${dbArtigo.negocio.subdominio}.rikoseo.com.br` },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `https://${dbArtigo.negocio.subdominio}.rikoseo.com.br/blog` },
       { "@type": "ListItem", position: 3, name: dbArtigo.titulo },
     ],
   });

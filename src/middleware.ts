@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
 
   // 1. Extração do Subdomínio
   const isLocalhost = hostname.includes("localhost:") || hostname.includes("127.0.0.1:");
-  const dominioPrincipal = isLocalhost ? "localhost:3000" : "localseo.com.br";
+  const dominioPrincipal = isLocalhost ? "localhost:3000" : "rikoseo.com.br";
 
   let subdominio: string | null = null;
 
@@ -36,13 +36,13 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(urlLogin);
     }
 
-    if (ehRotaAuth && tokenSessao) {
-      return NextResponse.redirect(new URL("/painel", request.url));
-    }
+    // Nota: NÃO redirecionar de /login para /painel baseado apenas no cookie.
+    // A verificação real da sessão acontece client-side no layout do dashboard.
+    // Redirecionar aqui causa loops quando o cookie existe mas é inválido.
   }
 
   // 3. Rewrite Silencioso de Subdomínios
-  // barbearia.localseo.com.br/contato -> /site/barbearia/contato
+  // barbearia.rikoseo.com.br/contato -> /site/barbearia/contato
   // localhost:3000?subdomain=barbearia -> /site/barbearia (em dev)
   if (subdominio && subdominio !== hostname) {
     const targetPath = `/site/${subdominio}${pathname === "/" ? "" : pathname}`;

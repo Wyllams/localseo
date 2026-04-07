@@ -29,7 +29,7 @@ export interface SeoLdProps {
  * Inclui: LocalBusiness, Service, FAQPage, AggregateRating.
  */
 export function gerarJsonLd(props: SeoLdProps): object[] {
-  const baseUrl = `https://${props.subdominio}.localseo.com.br`;
+  const baseUrl = `https://${props.subdominio}.rikoseo.com.br`;
   const pageUrl = `${baseUrl}/${props.slug}`;
 
   const schemas: object[] = [];

@@ -86,7 +86,7 @@ export async function listSites(auth: OAuth2Client): Promise<SiteInfo[]> {
 /**
  * Obtém dados de performance de busca (keywords, cliques, impressões, CTR, posição).
  *
- * @param siteUrl - URL do site (ex: "https://barbearia.localseo.com.br")
+ * @param siteUrl - URL do site (ex: "https://barbearia.rikoseo.com.br")
  * @param startDate - Data inicial no formato "YYYY-MM-DD"
  * @param endDate - Data final no formato "YYYY-MM-DD"
  * @param dimensions - Dimensões para agrupar ("query", "page", "device", "country", "date")
