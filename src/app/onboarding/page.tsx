@@ -198,14 +198,14 @@ export default function PaginaOnboarding() {
       </header>
 
       <div className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-5xl">
           {/* Indicador de progresso */}
           <div className="flex items-center justify-between mb-12">
             {ETAPAS.map((etapa, i) => (
               <div key={i} className="flex items-center">
                 <div
                   className={cn(
-                    "flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300",
+                    "flex items-center justify-center w-10 h-10 shrink-0 rounded-full transition-all duration-300",
                     i <= etapaAtual
                       ? "gradient-primary text-white"
                       : "bg-muted text-muted-foreground"
@@ -219,7 +219,7 @@ export default function PaginaOnboarding() {
                 </div>
                 <span
                   className={cn(
-                    "ml-2 text-sm font-medium hidden sm:block",
+                    "ml-2 text-sm font-medium hidden lg:block whitespace-nowrap",
                     i <= etapaAtual ? "text-foreground" : "text-muted-foreground"
                   )}
                 >
@@ -228,7 +228,7 @@ export default function PaginaOnboarding() {
                 {i < ETAPAS.length - 1 && (
                   <div
                     className={cn(
-                      "w-6 lg:w-12 h-0.5 mx-2",
+                      "w-4 md:w-12 lg:w-20 h-0.5 mx-2 md:mx-4 shrink-0",
                       i < etapaAtual ? "bg-primary" : "bg-border"
                     )}
                   />
@@ -238,7 +238,7 @@ export default function PaginaOnboarding() {
           </div>
 
           {/* Conteúdo da etapa */}
-          <div className="glass-card p-8 animate-fade-in">
+          <div className="glass-card p-8 animate-fade-in max-w-2xl mx-auto w-full">
             {/* ===== ETAPA 0: Dados do Negócio ===== */}
             {etapaAtual === 0 && (
               <div className="space-y-6">
