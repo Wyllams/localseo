@@ -1,12 +1,30 @@
+/**
+ * @deprecated Este módulo foi substituído por @/lib/google/mybusiness.ts
+ *
+ * Use o cliente unificado em '@/lib/google/mybusiness' que suporta:
+ * - Tokens criptografados E plaintext (auto-detect)
+ * - OAuth2Client com auto-refresh
+ * - Todas as operações: listAccounts, listLocations, createPost, getReviews, replyToReview
+ *
+ * Este arquivo é mantido apenas para compatibilidade reversa.
+ * NÃO use em código novo.
+ */
+
+export { getAuthClient as getGoogleAuth } from "@/lib/google/mybusiness";
+export { listAccounts as listarContasGMB } from "@/lib/google/mybusiness";
+export { listLocations as listarLocaisGMB } from "@/lib/google/mybusiness";
+export { createPost as publicarPostGMB } from "@/lib/google/mybusiness";
+
+// Re-exportar getGoogleAccessToken para não quebrar imports existentes
 import { bd } from "@/db";
 import { account } from "@/db/schema/auth";
 import { eq, and } from "drizzle-orm";
 
 /**
- * Função utilitária para recuperar o Access Token do Google do Banco de Dados
- * O token é salvo pelo Better Auth quando o usuário faz login e aceita os escopos.
+ * @deprecated Use getAuthClient de @/lib/google/mybusiness em vez disso.
  */
 export async function getGoogleAccessToken(userId: string): Promise<string | null> {
+  console.warn("[DEPRECATED] getGoogleAccessToken() — use getAuthClient() de @/lib/google/mybusiness");
   const accountQuery = await bd.query.account.findFirst({
     where: and(eq(account.userId, userId), eq(account.providerId, "google")),
   });
@@ -15,106 +33,4 @@ export async function getGoogleAccessToken(userId: string): Promise<string | nul
     return null;
   }
   return accountQuery.accessToken;
-}
-
-/**
- * Interface simples para Contas e Locais
- */
-interface GmbAccount {
-  name: string; // ex: accounts/123456
-  accountName: string; // O nome fantasia da conta
-  type: string;
-}
-
-interface GmbLocation {
-  name: string; // ex: accounts/123/locations/456
-  title: string;
-  storeCode?: string;
-}
-
-export async function listarContasGMB(accessToken: string): Promise<GmbAccount[]> {
-  const url = "https://mybusinessaccountmanagement.googleapis.com/v1/accounts";
-  
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-
-  if (!res.ok) {
-    const txt = await res.text();
-    console.error("[GMB] Erro ao listar contas:", txt);
-    throw new Error(`Erro API Google: ${res.status}`);
-  }
-
-  const data = await res.json();
-  return data.accounts || [];
-}
-
-export async function listarLocaisGMB(accessToken: string, accountName: string): Promise<GmbLocation[]> {
-  const url = `https://mybusinessbusinessinformation.googleapis.com/v1/${accountName}/locations?readMask=name,title,storeCode`;
-  
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-
-  if (!res.ok) {
-    const txt = await res.text();
-    console.error("[GMB] Erro ao listar locais:", txt);
-    throw new Error(`Erro API Google: ${res.status}`);
-  }
-
-  const data = await res.json();
-  return data.locations || [];
-}
-
-export async function publicarPostGMB(
-  accessToken: string,
-  accountName: string,
-  locationName: string, // Pode vir tudo em "name" da query locations
-  conteudo: string,
-  imagemUrl?: string,
-  tipoAcao: string = "LEARN_MORE",
-  siteUrl?: string
-) {
-  // A string 'locationName' da businessInformation costuma ser igual a accounts/{accountId}/locations/{locationId}
-  // A documentação do LocalPosts v4.9 pede parent: accounts/{accountId}/locations/{locationId}
-  // BaseURL da API v4
-  const url = `https://mybusiness.googleapis.com/v4/${locationName}/localPosts`;
-
-  const corpoPost: any = {
-    languageCode: "pt-BR",
-    summary: conteudo,
-  };
-
-  if (imagemUrl) {
-    corpoPost.media = [
-      {
-        mediaFormat: "PHOTO",
-        sourceUrl: imagemUrl,
-      },
-    ];
-  }
-
-  if (siteUrl && tipoAcao !== "NONE") {
-    corpoPost.action = {
-      actionType: tipoAcao,
-      url: siteUrl,
-    };
-  }
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(corpoPost),
-  });
-
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("[GMB] Erro ao publicar post local:", errorText);
-    throw new Error(`Erro de publicação GMB: ${res.status} - ${errorText}`);
-  }
-
-  return await res.json();
 }

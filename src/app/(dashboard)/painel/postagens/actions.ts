@@ -110,32 +110,44 @@ export async function salvarPostagem(opts: {
 
     // Se publicar está ativo, tenta enviar ao GMB
     if (opts.publicar) {
-      try {
-        const { getGoogleAccessToken, publicarPostGMB } = await import(
-          "@/lib/google-api/gmb"
-        );
-        const accessToken = await getGoogleAccessToken(sessao.user.id);
+      if (
+        negocioDb.gAccessToken &&
+        negocioDb.gRefreshToken &&
+        negocioDb.gmbLocalId &&
+        !negocioDb.gmbContaId?.includes("sandbox")
+      ) {
+        try {
+          const { getAuthClient, createPost } = await import("@/lib/google/mybusiness");
+          const authClient = getAuthClient(negocioDb.gAccessToken, negocioDb.gRefreshToken);
 
-        if (
-          accessToken &&
-          negocioDb.gmbContaId &&
-          negocioDb.gmbLocalId &&
-          !negocioDb.gmbContaId.includes("sandbox")
-        ) {
-          await publicarPostGMB(
-            accessToken,
-            negocioDb.gmbContaId,
-            negocioDb.gmbLocalId,
-            opts.conteudo,
-            opts.imagemUrl,
-            "LEARN_MORE",
-            negocioDb.website || "https://rikoseo.vercel.app"
-          );
+          // Mapear tipo interno para tipo da API GMB
+          const topicTypeMap: Record<string, "STANDARD" | "OFFER" | "EVENT"> = {
+            NOVIDADE: "STANDARD",
+            OFERTA: "OFFER",
+            EVENTO: "EVENT",
+          };
+
+          const gmbPostId = await createPost(authClient, negocioDb.gmbLocalId, {
+            topicType: topicTypeMap[opts.tipo] || "STANDARD",
+            summary: opts.conteudo,
+            media: opts.imagemUrl
+              ? [{ mediaFormat: "PHOTO", sourceUrl: opts.imagemUrl }]
+              : undefined,
+            callToAction: negocioDb.website
+              ? { actionType: "LEARN_MORE", url: negocioDb.website }
+              : undefined,
+          });
+
           statusFinal = "PUBLICADO";
+          console.log(`[GMB] Post publicado no Google: ${gmbPostId}`);
+        } catch (erroGmb: any) {
+          console.error("[GMB] Erro ao publicar post no Google:", erroGmb);
+          statusFinal = "FALHOU"; // NÃO marcar como publicado se falhou!
         }
-      } catch {
-        console.log("[GMB] Publicação via API não disponível, salvando localmente.");
-        statusFinal = "PUBLICADO"; // Marca como publicado localmente
+      } else {
+        // GMB não conectado — salvar como rascunho com aviso
+        console.log("[GMB] GMB não conectado, salvando post como rascunho.");
+        statusFinal = "RASCUNHO";
       }
     }
 

@@ -70,8 +70,9 @@ export async function gerarRespostaComIA(avaliacaoId: string) {
 }
 
 /**
- * Publica a resposta (editada ou não) no banco.
- * Futuramente, também postará via GMB API.
+ * Publica a resposta (editada ou não) no banco E no Google.
+ * Se o GMB estiver conectado e a avaliação tiver googleReviewId,
+ * tenta postar a resposta via API do Google automaticamente.
  */
 export async function publicarResposta(avaliacaoId: string, textoResposta: string) {
   try {
@@ -88,7 +89,12 @@ export async function publicarResposta(avaliacaoId: string, textoResposta: strin
 
     if (!avaliacaoDb) return { sucesso: false, erro: "Avaliação não encontrada." };
 
-    // Salvar no banco
+    // Buscar negócio para checar conexão GMB
+    const negocioDb = await bd.query.negocios.findFirst({
+      where: eq(negocios.id, avaliacaoDb.negocioId),
+    });
+
+    // 1. Salvar no banco local (sempre funciona)
     await bd
       .update(avaliacoes)
       .set({
@@ -98,12 +104,40 @@ export async function publicarResposta(avaliacaoId: string, textoResposta: strin
       })
       .where(eq(avaliacoes.id, avaliacaoId));
 
-    // TODO: Futuramente publicar via GMB API (replyToReview)
+    // 2. Tentar postar no Google se GMB estiver conectado
+    let publicadoNoGoogle = false;
+    let erroGoogle: string | undefined;
+
+    if (
+      avaliacaoDb.googleReviewId &&
+      negocioDb?.gAccessToken &&
+      negocioDb?.gRefreshToken &&
+      !negocioDb.gmbContaId?.includes("sandbox")
+    ) {
+      try {
+        const { getAuthClient, replyToReview } = await import("@/lib/google/mybusiness");
+        const authClient = getAuthClient(negocioDb.gAccessToken, negocioDb.gRefreshToken);
+        await replyToReview(authClient, avaliacaoDb.googleReviewId, textoResposta.trim());
+        publicadoNoGoogle = true;
+        console.log(`[GMB] Resposta publicada no Google para review: ${avaliacaoDb.googleReviewId}`);
+      } catch (erroGmb: any) {
+        console.error("[GMB] Falha ao publicar resposta no Google:", erroGmb);
+        erroGoogle = erroGmb.message || "Erro desconhecido ao publicar no Google";
+        // NÃO bloqueia — a resposta já foi salva localmente
+      }
+    }
 
     revalidatePath("/painel/avaliacoes");
-    return { sucesso: true };
+    return {
+      sucesso: true,
+      publicadoNoGoogle,
+      avisoGoogle: erroGoogle
+        ? `Resposta salva localmente, mas houve um erro ao publicar no Google: ${erroGoogle}`
+        : undefined,
+    };
   } catch (erro) {
     console.error("Action error publicarResposta:", erro);
     return { sucesso: false, erro: "Erro ao salvar resposta." };
   }
 }
+

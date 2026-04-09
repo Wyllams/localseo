@@ -1,2 +1,5 @@
-// Placeholder - Implementado na Fase 2 (Integração Google Business Profile)
+/**
+ * @deprecated Placeholder removido.
+ * Use @/lib/google/mybusiness para integração com Google Business Profile.
+ */
 export {};

@@ -81,10 +81,33 @@ export function starRatingToNumber(rating: string): number {
   return STAR_MAP[rating] ?? 0;
 }
 
+/* ===== Helper: Detecta formato e descriptografa se necessário ===== */
+
+/**
+ * Detecta se o token está criptografado (formato iv_hex:encrypted_hex)
+ * e descriptografa automaticamente. Se for plaintext, retorna como está.
+ */
+function safeDecrypt(token: string): string {
+  // Tokens criptografados com AES-256-CBC têm o formato: iv_hex(32chars):encrypted_hex
+  // Um IV hex tem exatamente 32 caracteres, então o separador ':' estaria na posição 32
+  const separatorIndex = token.indexOf(":");
+  if (separatorIndex === 32 && /^[0-9a-f]+$/.test(token.substring(0, 32))) {
+    try {
+      return decrypt(token);
+    } catch {
+      // Se falhar a descriptografia, assume que é plaintext
+      return token;
+    }
+  }
+  return token;
+}
+
 /* ===== Factory: Autenticação OAuth2 ===== */
 
 /**
- * Cria um OAuth2Client autenticado usando tokens criptografados do negócio.
+ * Cria um OAuth2Client autenticado.
+ * Aceita tokens criptografados (AES-256-CBC) ou plaintext.
+ * O OAuth2Client do Google faz auto-refresh do token quando expira.
  */
 export function getAuthClient(
   accessToken: string,
@@ -97,8 +120,8 @@ export function getAuthClient(
   );
 
   client.setCredentials({
-    access_token: decrypt(accessToken),
-    refresh_token: decrypt(refreshToken),
+    access_token: safeDecrypt(accessToken),
+    refresh_token: safeDecrypt(refreshToken),
   });
 
   return client;
