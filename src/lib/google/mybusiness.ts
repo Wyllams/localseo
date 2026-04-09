@@ -131,8 +131,11 @@ export function getAuthClient(
 
 /**
  * Lista todas as contas GMB do usuário autenticado.
+ * Tenta v1 (mybusinessaccountmanagement) primeiro, e se falhar por cota/permissão,
+ * faz fallback para o endpoint legacy v4 via REST direto.
  */
 export async function listAccounts(auth: OAuth2Client) {
+  // Estratégia 1: Tentar API v1 (nova)
   try {
     const mybusiness = google.mybusinessaccountmanagement({
       version: "v1",
@@ -141,9 +144,42 @@ export async function listAccounts(auth: OAuth2Client) {
 
     const res = await mybusiness.accounts.list();
     return res.data.accounts ?? [];
-  } catch (error) {
-    console.error("[GMB] Erro ao listar contas:", error);
-    throw error;
+  } catch (error: any) {
+    const status = error?.code || error?.response?.status;
+    console.warn(`[GMB] API v1 falhou (status: ${status}), tentando fallback v4...`);
+    
+    // Se NÃO for erro de cota/permissão, propagar o erro
+    if (status && ![403, 429].includes(Number(status))) {
+      throw error;
+    }
+  }
+
+  // Estratégia 2: Fallback para endpoint legacy v4 via REST direto
+  try {
+    const accessToken = (await auth.getAccessToken()).token;
+    if (!accessToken) throw new Error("Sem access_token disponível para fallback v4.");
+
+    const response = await fetch(
+      "https://mybusiness.googleapis.com/v4/accounts",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const body = await response.text();
+      console.error(`[GMB] Fallback v4 também falhou (${response.status}):`, body);
+      throw new Error(`API v4 retornou ${response.status}: ${body}`);
+    }
+
+    const data = await response.json();
+    return data.accounts ?? [];
+  } catch (errorV4) {
+    console.error("[GMB] Erro no fallback v4:", errorV4);
+    throw errorV4;
   }
 }
 
