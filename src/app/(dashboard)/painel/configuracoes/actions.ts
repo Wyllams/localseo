@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { bd } from "@/db";
-import { negocios, account } from "@/db/schema";
+import { negocios, account, avaliacoes } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { user } from "@/db/schema";
@@ -26,7 +26,7 @@ async function getGoogleAuthForUser(userId: string) {
 
   const { getAuthClient } = await import("@/lib/google/mybusiness");
   const authClient = getAuthClient(accountDb.accessToken, accountDb.refreshToken);
-  return { authClient };
+  return { authClient, accountDb };
 }
 
 /**
@@ -57,12 +57,10 @@ export async function carregarDadosGMB() {
       })),
       contaAtual: negocioDb?.gmbContaId,
       localAtual: negocioDb?.gmbLocalId,
-      // NÃO retornamos accessToken — segurança
     };
   } catch (erro: any) {
     console.error("[GMB] Erro ao carregar contas:", erro);
     
-    // Tratamento específico de erros de permissão
     const status = erro?.code || erro?.response?.status;
     if (status === 403) {
       return {
@@ -100,6 +98,9 @@ export async function carregarLocaisGMB(accountName: string) {
       locais: locations.map((l: any) => ({
         name: l.name,
         title: l.title || l.name,
+        endereco: l.address?.addressLines?.join(", ") || l.address?.locality || "",
+        telefone: l.phoneNumbers?.primaryPhone || "",
+        categoria: l.categories?.primaryCategory?.displayName || "",
       })),
     };
   } catch (erro: any) {
@@ -115,7 +116,64 @@ export async function carregarLocaisGMB(accountName: string) {
 }
 
 /**
+ * Testa a conexão com o GMB e retorna dados reais da localização.
+ * Valida que a API responde e que o local existe.
+ */
+export async function testarConexaoGMB(locationName: string) {
+  const sessao = await auth.api.getSession({ headers: await headers() });
+  if (!sessao?.user?.id) return { sucesso: false, erro: "Não autenticado." };
+
+  const resultado = await getGoogleAuthForUser(sessao.user.id);
+  if ("erro" in resultado) {
+    return { sucesso: false, erro: resultado.erro };
+  }
+
+  try {
+    const { getLocationInfo, getReviews, starRatingToNumber } = await import("@/lib/google/mybusiness");
+
+    // 1. Buscar dados da localização
+    const location = await getLocationInfo(resultado.authClient, locationName);
+    if (!location) {
+      return { sucesso: false, erro: "Localização não encontrada no Google. Verifique o ID." };
+    }
+
+    // 2. Tentar buscar reviews (valida permissão R/W)
+    let totalReviews = 0;
+    let notaMedia = 0;
+    try {
+      const reviewsData = await getReviews(resultado.authClient, locationName, 5);
+      totalReviews = reviewsData.totalReviews ?? 0;
+      notaMedia = reviewsData.averageRating ?? 0;
+    } catch {
+      // Reviews podem falhar se não houver nenhum — não é erro fatal
+      console.log("[GMB] Sem reviews disponíveis (normal para perfil novo).");
+    }
+
+    return {
+      sucesso: true,
+      dados: {
+        nome: location.title,
+        endereco: location.address?.addressLines?.join(", ") || location.address?.locality || "Não informado",
+        telefone: location.phoneNumbers?.primaryPhone || "Não informado",
+        categoria: location.categories?.primaryCategory?.displayName || "Não informada",
+        website: location.websiteUri || "Não informado",
+        status: location.openInfo?.status || "UNKNOWN",
+        totalReviews,
+        notaMedia: Math.round(notaMedia * 10) / 10,
+      },
+    };
+  } catch (erro: any) {
+    console.error("[GMB] Erro ao testar conexão:", erro);
+    return {
+      sucesso: false,
+      erro: `Falha ao acessar a API do Google: ${erro.message}`,
+    };
+  }
+}
+
+/**
  * Salva a vinculação conta/local GMB no negócio do usuário.
+ * Após salvar, faz sync inicial de reviews (não espera o cron de 6h).
  */
 export async function salvarConfiguracaoGMB(accountName: string, locationName: string) {
   const sessao = await auth.api.getSession({ headers: await headers() });
@@ -127,6 +185,14 @@ export async function salvarConfiguracaoGMB(accountName: string, locationName: s
       where: and(eq(account.userId, sessao.user.id), eq(account.providerId, "google")),
     });
 
+    const negocioDb = await bd.query.negocios.findFirst({
+      where: eq(negocios.donoId, sessao.user.id),
+    });
+
+    if (!negocioDb) {
+      return { erro: "Negócio não encontrado. Complete o onboarding primeiro." };
+    }
+
     const updateData: Record<string, unknown> = {
       gmbContaId: accountName,
       gmbLocalId: locationName,
@@ -137,7 +203,6 @@ export async function salvarConfiguracaoGMB(accountName: string, locationName: s
     if (accountDb?.accessToken && accountDb?.refreshToken) {
       const { encrypt } = await import("@/lib/crypto");
       
-      // Criptografar antes de salvar (os tokens do Better-Auth são plaintext)
       // Verifica se já não está criptografado (evitar dupla criptografia)
       const isAlreadyEncrypted = (t: string) => {
         const idx = t.indexOf(":");
@@ -158,13 +223,76 @@ export async function salvarConfiguracaoGMB(accountName: string, locationName: s
       .set(updateData)
       .where(eq(negocios.donoId, sessao.user.id));
 
+    // === Sync inicial de reviews (background, não bloqueia) ===
+    syncInicialReviews(negocioDb.id, accountDb, locationName).catch((err) => {
+      console.error("[GMB] Erro no sync inicial de reviews (não-fatal):", err);
+    });
+
     revalidatePath("/painel/perfil-gmb");
     revalidatePath("/painel/configuracoes");
+    revalidatePath("/painel/avaliacoes");
     return { sucesso: true };
   } catch (erro) {
     console.error("[GMB] Erro ao salvar configuração:", erro);
     return { erro: "Erro ao salvar conexão GMB no banco de dados." };
   }
+}
+
+/**
+ * Faz sync inicial de reviews imediatamente após conectar o GMB.
+ * Roda em background (fire-and-forget) para não bloquear a UI.
+ */
+async function syncInicialReviews(
+  negocioId: string,
+  accountDb: any,
+  locationName: string
+): Promise<void> {
+  if (!accountDb?.accessToken || !accountDb?.refreshToken) return;
+
+  const { getAuthClient, getReviews, starRatingToNumber } = await import("@/lib/google/mybusiness");
+  const authClient = getAuthClient(accountDb.accessToken, accountDb.refreshToken);
+
+  const resultado = await getReviews(authClient, locationName, 50);
+  if (!resultado.reviews || resultado.reviews.length === 0) {
+    console.log("[GMB Sync Inicial] Nenhum review encontrado.");
+    return;
+  }
+
+  let novos = 0;
+  for (const review of resultado.reviews) {
+    const googleReviewId = review.name;
+    const nota = starRatingToNumber(review.starRating);
+
+    // Verificar se já existe
+    const existente = await bd.query.avaliacoes.findFirst({
+      where: eq(avaliacoes.googleReviewId, googleReviewId),
+    });
+
+    if (existente) continue; // Já existe, pular
+
+    const sentimentoBase =
+      nota >= 4 ? "POSITIVO" : nota === 3 ? "NEUTRO" : "NEGATIVO";
+
+    await bd.insert(avaliacoes).values({
+      negocioId,
+      googleReviewId,
+      autor: review.reviewer?.displayName || "Anônimo",
+      nota,
+      texto: review.comment || null,
+      sentimento: sentimentoBase,
+      respondido: !!review.reviewReply,
+      textoResposta: review.reviewReply?.comment || null,
+      respondidoEm: review.reviewReply?.updateTime
+        ? new Date(review.reviewReply.updateTime)
+        : null,
+      alertaEnviado: false,
+      publicadoEm: new Date(review.createTime),
+    });
+
+    novos++;
+  }
+
+  console.log(`[GMB Sync Inicial] ✅ ${novos} reviews novos sincronizados.`);
 }
 
 /* ===== Actions de Perfil do Usuário ===== */

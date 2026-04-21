@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FormPerfilGmb } from "./form-perfil-gmb";
+import { ComparacaoGoogleLocal } from "./comparacao-google";
 
 export default async function PaginaPerfilGmb() {
   const sessao = await auth.api.getSession({ headers: await headers() });
@@ -253,6 +254,18 @@ export default async function PaginaPerfilGmb() {
             ))}
           </div>
         </div>
+      )}
+
+      {/* Comparação Google vs Local — só aparece se GMB conectado */}
+      {gmbConectado && !negocioUser.gmbContaId?.includes("sandbox") && (
+        <ComparacaoGoogleLocal
+          dadosLocais={{
+            nome: negocioUser.nome,
+            endereco: negocioUser.endereco,
+            telefone: negocioUser.telefone,
+            website: negocioUser.website,
+          }}
+        />
       )}
 
       {/* Linha 3: Formulário de Edição */}

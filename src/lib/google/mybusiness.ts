@@ -1,23 +1,25 @@
 /**
- * Cliente Google My Business API v4.
+ * Cliente Google Business Profile API.
  *
  * Centraliza todas as chamadas para a API do Google Meu Negócio:
- * - Listar perfis/localizações
- * - Obter e responder avaliações
- * - Criar posts (updates)
- * - Obter informações do perfil
+ * - Listar perfis/localizações (Account Management v1 + Business Information v1)
+ * - Obter e responder avaliações (v4 REST — ainda ativo)
+ * - Criar posts / updates (v4 REST — ainda ativo)
+ * - Obter informações e atualizar perfil (Business Information v1)
+ * - Métricas de performance (Performance API v1)
+ * - Keywords de busca (Performance API v1)
  *
  * @see https://developers.google.com/my-business/reference/rest
  */
 
-import { google, type mybusinessbusinessinformation_v1 } from "googleapis";
+import { google } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { decrypt } from "@/lib/crypto";
 
 /* ===== Tipos ===== */
 
 export interface GmbLocation {
-  name: string; // accounts/{id}/locations/{id}
+  name: string; // accounts/{id}/locations/{id} ou locations/{id}
   title: string;
   address?: {
     addressLines?: string[];
@@ -68,6 +70,33 @@ export interface GmbPost {
   };
 }
 
+export interface GmbLocationUpdate {
+  title?: string;
+  phoneNumbers?: { primaryPhone: string };
+  websiteUri?: string;
+  profile?: { description: string };
+  storefrontAddress?: {
+    addressLines?: string[];
+    locality?: string;
+    administrativeArea?: string;
+    postalCode?: string;
+  };
+}
+
+export interface GmbPerformanceData {
+  buscasMaps: number;
+  buscasSearch: number;
+  cliquesWebsite: number;
+  cliquesLigacao: number;
+  pedidosDirecao: number;
+  seriesTemporal: { data: string; impressoes: number; acoes: number }[];
+}
+
+export interface GmbSearchKeyword {
+  keyword: string;
+  impressions: number;
+}
+
 /* ===== Helper: Star rating → número ===== */
 const STAR_MAP: Record<string, number> = {
   ONE: 1,
@@ -102,6 +131,18 @@ function safeDecrypt(token: string): string {
   return token;
 }
 
+/* ===== Helper: Extrair locationId puro de um resource name ===== */
+
+/**
+ * Extrai o ID limpo de uma location a partir do resource name completo.
+ * "accounts/123/locations/456" → "locations/456"
+ * "locations/456" → "locations/456"
+ */
+export function extractLocationName(fullName: string): string {
+  const match = fullName.match(/locations\/[\w-]+/);
+  return match ? match[0] : fullName;
+}
+
 /* ===== Factory: Autenticação OAuth2 ===== */
 
 /**
@@ -127,15 +168,13 @@ export function getAuthClient(
   return client;
 }
 
-/* ===== Funções da API ===== */
+/* ===== Funções da API: Account Management ===== */
 
 /**
  * Lista todas as contas GMB do usuário autenticado.
- * Tenta v1 (mybusinessaccountmanagement) primeiro, e se falhar por cota/permissão,
- * faz fallback para o endpoint legacy v4 via REST direto.
+ * Usa a API v1 (mybusinessaccountmanagement).
  */
 export async function listAccounts(auth: OAuth2Client) {
-  // Estratégia 1: Tentar API v1 (nova)
   try {
     const mybusiness = google.mybusinessaccountmanagement({
       version: "v1",
@@ -144,44 +183,14 @@ export async function listAccounts(auth: OAuth2Client) {
 
     const res = await mybusiness.accounts.list();
     return res.data.accounts ?? [];
-  } catch (error: any) {
-    const status = error?.code || error?.response?.status;
-    console.warn(`[GMB] API v1 falhou (status: ${status}), tentando fallback v4...`);
-    
-    // Se NÃO for erro de cota/permissão, propagar o erro
-    if (status && ![403, 429].includes(Number(status))) {
-      throw error;
-    }
-  }
-
-  // Estratégia 2: Fallback para endpoint legacy v4 via REST direto
-  try {
-    const accessToken = (await auth.getAccessToken()).token;
-    if (!accessToken) throw new Error("Sem access_token disponível para fallback v4.");
-
-    const response = await fetch(
-      "https://mybusiness.googleapis.com/v4/accounts",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const body = await response.text();
-      console.error(`[GMB] Fallback v4 também falhou (${response.status}):`, body);
-      throw new Error(`API v4 retornou ${response.status}: ${body}`);
-    }
-
-    const data = await response.json();
-    return data.accounts ?? [];
-  } catch (errorV4) {
-    console.error("[GMB] Erro no fallback v4:", errorV4);
-    throw errorV4;
+  } catch (error: unknown) {
+    const apiError = error as { code?: number; response?: { status?: number }; message?: string };
+    console.error("[GMB] Erro ao listar contas:", apiError.message);
+    throw error;
   }
 }
+
+/* ===== Funções da API: Business Information ===== */
 
 /**
  * Lista todas as localizações (perfis) de uma conta.
@@ -209,7 +218,88 @@ export async function listLocations(
 }
 
 /**
+ * Obtém informações detalhadas de uma localização.
+ */
+export async function getLocationInfo(
+  auth: OAuth2Client,
+  locationName: string
+): Promise<GmbLocation | null> {
+  try {
+    const mybusiness = google.mybusinessbusinessinformation({
+      version: "v1",
+      auth,
+    });
+
+    // A API espera o formato "locations/{id}" sem o prefixo "accounts/"
+    const cleanName = extractLocationName(locationName);
+
+    const res = await mybusiness.locations.get({
+      name: cleanName,
+      readMask: "name,title,storefrontAddress,phoneNumbers,websiteUri,categories,openInfo",
+    });
+
+    return res.data as GmbLocation;
+  } catch (error) {
+    console.error("[GMB] Erro ao obter info da localização:", error);
+    throw error;
+  }
+}
+
+/**
+ * Atualiza informações do perfil diretamente no Google.
+ * Usa locations.patch da Business Information API v1.
+ *
+ * @param auth OAuth2Client autenticado
+ * @param locationName Resource name da localização (ex: "locations/456")
+ * @param updates Campos a atualizar
+ * @returns Localização atualizada ou null
+ */
+export async function updateLocationInfo(
+  auth: OAuth2Client,
+  locationName: string,
+  updates: GmbLocationUpdate
+): Promise<GmbLocation | null> {
+  try {
+    const mybusiness = google.mybusinessbusinessinformation({
+      version: "v1",
+      auth,
+    });
+
+    const cleanName = extractLocationName(locationName);
+
+    // Montar updateMask com os campos que realmente foram fornecidos
+    const maskFields: string[] = [];
+    if (updates.title !== undefined) maskFields.push("title");
+    if (updates.phoneNumbers !== undefined) maskFields.push("phoneNumbers");
+    if (updates.websiteUri !== undefined) maskFields.push("websiteUri");
+    if (updates.profile !== undefined) maskFields.push("profile");
+    if (updates.storefrontAddress !== undefined) maskFields.push("storefrontAddress");
+
+    if (maskFields.length === 0) {
+      console.log("[GMB] Nenhum campo para atualizar no Google.");
+      return null;
+    }
+
+    const res = await mybusiness.locations.patch({
+      name: cleanName,
+      updateMask: maskFields.join(","),
+      requestBody: updates,
+    });
+
+    console.log(`[GMB] Perfil atualizado no Google: ${cleanName} (campos: ${maskFields.join(", ")})`);
+    return res.data as GmbLocation;
+  } catch (error: unknown) {
+    const apiError = error as { code?: number; message?: string };
+    console.error("[GMB] Erro ao atualizar perfil no Google:", apiError.message);
+    throw error;
+  }
+}
+
+/* ===== Funções da API: Reviews (v4 REST) ===== */
+
+/**
  * Obtém avaliações de uma localização.
+ * Usa endpoint v4 REST (ainda ativo para reviews).
  */
 export async function getReviews(
   auth: OAuth2Client,
@@ -217,7 +307,6 @@ export async function getReviews(
   pageSize = 50
 ): Promise<{ reviews: GmbReview[]; averageRating?: number; totalReviews?: number }> {
   try {
-    // A API de reviews usa um endpoint diferente
     const url = `https://mybusiness.googleapis.com/v4/${locationName}/reviews?pageSize=${pageSize}`;
 
     const token = await auth.getAccessToken();
@@ -247,6 +336,7 @@ export async function getReviews(
 
 /**
  * Responde a uma avaliação específica.
+ * Usa endpoint v4 REST.
  */
 export async function replyToReview(
   auth: OAuth2Client,
@@ -278,8 +368,11 @@ export async function replyToReview(
   }
 }
 
+/* ===== Funções da API: Local Posts (v4 REST) ===== */
+
 /**
  * Cria um post (local post / update) no perfil GMB.
+ * Usa endpoint v4 REST.
  */
 export async function createPost(
   auth: OAuth2Client,
@@ -313,27 +406,182 @@ export async function createPost(
   }
 }
 
+/* ===== Funções da API: Performance Metrics (v1 REST) ===== */
+
 /**
- * Obtém informações detalhadas de uma localização.
+ * Obtém métricas de performance do perfil GMB.
+ * Usa a Performance API v1 — fetchMultiDailyMetricsTimeSeries.
+ *
+ * @param auth OAuth2Client autenticado
+ * @param locationName Resource name no formato "locations/{id}"
+ * @param diasAtras Número de dias para buscar (padrão: 28)
+ * @returns Dados de performance agregados + séries temporais
  */
-export async function getLocationInfo(
+export async function getPerformanceMetrics(
+  auth: OAuth2Client,
+  locationName: string,
+  diasAtras = 28
+): Promise<GmbPerformanceData> {
+  try {
+    const cleanName = extractLocationName(locationName);
+
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - diasAtras);
+
+    const url = `https://businessprofileperformance.googleapis.com/v1/${cleanName}:fetchMultiDailyMetricsTimeSeries`;
+
+    const token = await auth.getAccessToken();
+    const params = new URLSearchParams({
+      "dailyMetrics": "BUSINESS_IMPRESSIONS_DESKTOP_MAPS",
+      "dailyRange.startDate.year": String(startDate.getFullYear()),
+      "dailyRange.startDate.month": String(startDate.getMonth() + 1),
+      "dailyRange.startDate.day": String(startDate.getDate()),
+      "dailyRange.endDate.year": String(endDate.getFullYear()),
+      "dailyRange.endDate.month": String(endDate.getMonth() + 1),
+      "dailyRange.endDate.day": String(endDate.getDate()),
+    });
+
+    // Adicionar múltiplas métricas
+    const metrics = [
+      "BUSINESS_IMPRESSIONS_DESKTOP_MAPS",
+      "BUSINESS_IMPRESSIONS_MOBILE_MAPS",
+      "BUSINESS_IMPRESSIONS_DESKTOP_SEARCH",
+      "BUSINESS_IMPRESSIONS_MOBILE_SEARCH",
+      "WEBSITE_CLICKS",
+      "CALL_CLICKS",
+      "BUSINESS_DIRECTION_REQUESTS",
+    ];
+
+    // A API aceita múltiplos dailyMetrics via query param repetido
+    const fullUrl = `${url}?${metrics.map(m => `dailyMetrics=${m}`).join("&")}&dailyRange.startDate.year=${startDate.getFullYear()}&dailyRange.startDate.month=${startDate.getMonth() + 1}&dailyRange.startDate.day=${startDate.getDate()}&dailyRange.endDate.year=${endDate.getFullYear()}&dailyRange.endDate.month=${endDate.getMonth() + 1}&dailyRange.endDate.day=${endDate.getDate()}`;
+
+    const res = await fetch(fullUrl, {
+      headers: {
+        Authorization: `Bearer ${token.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      throw new Error(`GMB Performance API error (${res.status}): ${errBody}`);
+    }
+
+    const data = await res.json();
+    return parsePerformanceResponse(data);
+  } catch (error) {
+    console.error("[GMB] Erro ao obter métricas de performance:", error);
+    throw error;
+  }
+}
+
+/**
+ * Parseia a resposta da Performance API em um formato limpo.
+ */
+function parsePerformanceResponse(data: any): GmbPerformanceData {
+  const result: GmbPerformanceData = {
+    buscasMaps: 0,
+    buscasSearch: 0,
+    cliquesWebsite: 0,
+    cliquesLigacao: 0,
+    pedidosDirecao: 0,
+    seriesTemporal: [],
+  };
+
+  const dailyMap = new Map<string, { impressoes: number; acoes: number }>();
+
+  const timeSeries = data.multiDailyMetricTimeSeries ?? [];
+  for (const series of timeSeries) {
+    const metric = series.dailyMetric as string;
+    const dataPoints = series.timeSeries?.datedValues ?? [];
+
+    for (const point of dataPoints) {
+      const dateStr = point.date
+        ? `${point.date.year}-${String(point.date.month).padStart(2, "0")}-${String(point.date.day).padStart(2, "0")}`
+        : "unknown";
+      const value = parseInt(point.value ?? "0", 10);
+
+      // Agregar totais
+      if (metric.includes("MAPS")) {
+        result.buscasMaps += value;
+      } else if (metric.includes("SEARCH")) {
+        result.buscasSearch += value;
+      } else if (metric === "WEBSITE_CLICKS") {
+        result.cliquesWebsite += value;
+      } else if (metric === "CALL_CLICKS") {
+        result.cliquesLigacao += value;
+      } else if (metric === "BUSINESS_DIRECTION_REQUESTS") {
+        result.pedidosDirecao += value;
+      }
+
+      // Série temporal agrupada por dia
+      if (!dailyMap.has(dateStr)) {
+        dailyMap.set(dateStr, { impressoes: 0, acoes: 0 });
+      }
+      const entry = dailyMap.get(dateStr)!;
+      if (metric.includes("IMPRESSIONS")) {
+        entry.impressoes += value;
+      } else {
+        entry.acoes += value;
+      }
+    }
+  }
+
+  // Converter map em array ordenado
+  result.seriesTemporal = Array.from(dailyMap.entries())
+    .map(([data, vals]) => ({ data, ...vals }))
+    .sort((a, b) => a.data.localeCompare(b.data));
+
+  return result;
+}
+
+/**
+ * Obtém as keywords que geraram impressões no perfil (últimos 30 dias).
+ * Usa Performance API v1 — locations.searchkeywords.impressions.monthly.list
+ */
+export async function getSearchKeywords(
   auth: OAuth2Client,
   locationName: string
-): Promise<GmbLocation | null> {
+): Promise<GmbSearchKeyword[]> {
   try {
-    const mybusiness = google.mybusinessbusinessinformation({
-      version: "v1",
-      auth,
+    const cleanName = extractLocationName(locationName);
+    const url = `https://businessprofileperformance.googleapis.com/v1/${cleanName}/searchkeywords/impressions/monthly`;
+
+    const token = await auth.getAccessToken();
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token.token}`,
+        "Content-Type": "application/json",
+      },
     });
 
-    const res = await mybusiness.locations.get({
-      name: locationName,
-      readMask: "name,title,storefrontAddress,phoneNumbers,websiteUri,categories,openInfo,profile,serviceArea,metadata",
-    });
+    if (!res.ok) {
+      const errBody = await res.text();
+      // Se retornar 404 ou 400, provavelmente a localização não tem dados suficientes
+      if (res.status === 404 || res.status === 400) {
+        console.log("[GMB] Sem dados de keywords para esta localização (dados insuficientes).");
+        return [];
+      }
+      throw new Error(`GMB Search Keywords API error (${res.status}): ${errBody}`);
+    }
 
-    return res.data as GmbLocation;
+    const data = await res.json();
+    const keywords: GmbSearchKeyword[] = [];
+
+    for (const item of data.searchKeywordsCounts ?? []) {
+      if (item.keyword && item.insightsValue?.value) {
+        keywords.push({
+          keyword: item.keyword,
+          impressions: parseInt(item.insightsValue.value, 10),
+        });
+      }
+    }
+
+    // Ordenar por impressões (mais buscado primeiro)
+    return keywords.sort((a, b) => b.impressions - a.impressions);
   } catch (error) {
-    console.error("[GMB] Erro ao obter info da localização:", error);
+    console.error("[GMB] Erro ao obter keywords de busca:", error);
     throw error;
   }
 }

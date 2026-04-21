@@ -59,7 +59,13 @@ export function FormPerfilGmb({ negocio }: { negocio: DadosNegocio }) {
       });
 
       if (res.sucesso) {
-        toast.success("Perfil atualizado com sucesso! ✅");
+        if (res.sincronizadoComGoogle) {
+          toast.success("Salvo localmente ✅ | Sincronizado com Google ✅");
+        } else if (res.avisoGoogle) {
+          toast.warning(res.avisoGoogle, { duration: 6000 });
+        } else {
+          toast.success("Perfil salvo localmente! ✅");
+        }
       } else {
         toast.error(res.erro || "Erro ao salvar.");
       }
@@ -257,7 +263,7 @@ export function FormPerfilGmb({ negocio }: { negocio: DadosNegocio }) {
             {descricao.length}/750 caracteres
           </span>
           <p className="text-[11px] text-muted-foreground">
-            Cole esta descrição no Google Meu Negócio para melhorar visibilidade.
+            Se o GMB estiver conectado, a descrição será enviada automaticamente ao Google ao salvar.
           </p>
         </div>
       </div>

@@ -30,6 +30,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { GraficoEvolucao } from "@/components/dashboard/grafico-evolucao";
+import { CardMetricasGMB } from "@/components/dashboard/card-metricas-gmb";
 import Link from "next/link";
 import { formatarData, tempoRelativo } from "@/lib/utils";
 import { RecalcularScoreClient } from "./recalcular-score-client";
@@ -205,6 +206,11 @@ export default async function PaginaPainel() {
           })}
         </div>
       </div>
+
+      {/* Métricas GMB — aparece apenas se conectado */}
+      {negocioUser.gmbLocalId && !negocioUser.gmbContaId?.includes("sandbox") && (
+        <CardMetricasGMB />
+      )}
 
       {/* Cards de métricas */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
